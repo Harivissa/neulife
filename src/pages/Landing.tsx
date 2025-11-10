@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Activity, Shield, Zap, Heart, FileText, Users } from "lucide-react";
+import { Play, Menu, TrendingUp, Code, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -12,170 +12,218 @@ const Landing = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card-tinted to-background">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-              <Heart className="h-6 w-6 text-primary-foreground" />
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/10">
+        <div className="container mx-auto px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-foreground" />
+              <div className="h-2 w-2 rounded-full bg-foreground" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">New Life</h1>
+            <h1 className="text-xl font-bold text-foreground">New Life</h1>
           </div>
+          
+          <nav className="hidden md:flex items-center gap-8 text-sm">
+            <button className="text-foreground hover:text-primary transition-colors">{t('home') || 'Home'}</button>
+            <button className="text-muted-foreground hover:text-foreground transition-colors">{t('success') || 'Success'}</button>
+            <button className="text-muted-foreground hover:text-foreground transition-colors">{t('categories') || 'Categories'}</button>
+            <button className="text-muted-foreground hover:text-foreground transition-colors" onClick={() => navigate("/auth")}>{t('pricing') || 'Pricing'}</button>
+          </nav>
+
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <LanguageSelector />
-            <Button variant="ghost" onClick={() => navigate("/auth")}>
-              {t('signIn')}
-            </Button>
-            <Button 
-              className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90"
-              onClick={() => navigate("/auth")}
-            >
-              {t('getStarted')}
-            </Button>
+            <button className="md:hidden">
+              <Menu className="h-6 w-6 text-foreground" />
+            </button>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-primary/20 mb-6">
-            <Shield className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Privacy-First Healthcare</span>
-          </div>
-          
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            {t('welcomeTitle')}
-          </h2>
-          
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            {t('welcomeSubtitle')}
-          </p>
+      <section className="container mx-auto px-6 py-16 md:py-24">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left Content */}
+          <div className="space-y-8">
+            <div className="inline-block rounded-full bg-muted/50 px-4 py-2 backdrop-blur-sm">
+              <p className="text-xs md:text-sm text-muted-foreground">{t('forYourUser') || 'For Your User'}</p>
+            </div>
+            
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+                <span className="text-foreground">{t('made') || 'Made'}</span>
+                <br />
+                <span className="bg-gradient-to-r from-secondary via-primary to-accent bg-clip-text text-transparent">
+                  {t('usability') || 'Usability'}
+                </span>
+              </h1>
+              
+              <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <span className="text-foreground font-medium">01</span> {t('design') || 'Design'}
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="text-foreground font-medium">02</span> {t('development') || 'Development'}
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="text-foreground font-medium">03</span> {t('maintenance') || 'Maintenance'}
+                </span>
+              </div>
+            </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-lg px-8"
-              onClick={() => navigate("/auth")}
-            >
-              {t('requestHealthCard')}
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="text-lg px-8 border-primary/30"
+              size="lg"
+              className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-8"
               onClick={() => navigate("/triage")}
             >
-              {t('tryAITriage')}
+              <Play className="h-4 w-4 mr-2 fill-current" />
+              {t('viewShowreel') || 'View Showreel'}
             </Button>
           </div>
+
+          {/* Right Graphic */}
+          <div className="relative flex items-center justify-center">
+            <div className="relative w-64 h-64 md:w-80 md:h-80">
+              {/* Gradient Circle */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary via-secondary to-accent opacity-80 blur-xl" />
+              <div className="absolute inset-8 rounded-full bg-gradient-to-tr from-secondary via-primary to-accent" />
+              
+              {/* Center Circle with Text */}
+              <div className="absolute inset-16 rounded-full bg-background border border-border flex items-center justify-center">
+                <div className="text-center">
+                  <Play className="h-8 w-8 mx-auto mb-2 text-foreground" />
+                  <p className="text-xs text-muted-foreground tracking-wider">Creative<br />Studio</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tagline Section */}
+      <section className="container mx-auto px-6 py-12">
+        <div className="text-center max-w-3xl mx-auto">
+          <p className="text-muted-foreground">
+            {t('tagline') || 'We are a'}{' '}
+            <span className="text-foreground font-semibold">{t('digitalAgency') || 'Digital Agency'}</span>{' '}
+            {t('thatHelps') || 'That Helps'}{' '}
+            <span className="text-foreground font-semibold">{t('brands') || 'Brands'}</span>{' '}
+            {t('becomeDigital') || 'become the Digital New Life.'}
+          </p>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="text-center mb-12">
-          <h3 className="text-3xl font-bold mb-3">{t('featuresTitle')}</h3>
-          <p className="text-muted-foreground text-lg">{t('featuresSubtitle')}</p>
+      <section className="container mx-auto px-6 py-12 md:py-16">
+        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {/* Blue Card - UX/UI Design */}
+          <Card className="relative overflow-hidden bg-primary border-0 p-8 group hover:scale-105 transition-transform">
+            <div className="space-y-6">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <p className="text-xs text-primary-foreground/80 tracking-wider uppercase">UX/UI DESIGN</p>
+                  <div className="h-0.5 w-8 bg-primary-foreground" />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-secondary to-accent" />
+                  <span className="text-5xl font-bold text-primary-foreground">12k</span>
+                </div>
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-accent to-primary opacity-60" />
+              </div>
+
+              <p className="text-xs text-primary-foreground/70">
+                {t('uxuiDescription') || '+3.5% Up from Yesterday'}
+              </p>
+            </div>
+            
+            <div className="absolute -right-8 -bottom-8 h-32 w-32 rounded-full bg-primary-foreground/10" />
+          </Card>
+
+          {/* Yellow Card - Clean Code */}
+          <Card className="relative overflow-hidden bg-accent border-0 p-8 group hover:scale-105 transition-transform">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <p className="text-sm text-accent-foreground font-medium">{t('cleanCode') || 'Clean'} <span className="font-bold">Code</span></p>
+                <p className="text-2xl text-accent-foreground font-bold">{t('qualityStandards') || 'Quality Standards'}</p>
+              </div>
+
+              {/* Gradient Arc */}
+              <div className="relative h-24 flex items-center justify-center">
+                <div className="w-32 h-32 rounded-full border-8 border-accent-foreground/20 border-t-secondary border-l-primary" />
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-xs text-accent-foreground/70">{t('frontEnd') || 'Front-End'}</p>
+                <p className="text-xs text-accent-foreground font-semibold">{t('development') || 'Development'}</p>
+              </div>
+            </div>
+          </Card>
+
+          {/* White Card - Motion Design */}
+          <Card className="relative overflow-hidden bg-card-elevated border border-border p-8 group hover:scale-105 transition-transform">
+            <div className="space-y-6">
+              <div className="flex items-center justify-center">
+                <div className="relative h-32 w-32">
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-muted via-foreground to-muted" />
+                </div>
+              </div>
+
+              <div className="space-y-2 text-center">
+                <p className="text-lg font-semibold text-foreground">{t('motionDesign') || 'Motion Design'}</p>
+                <p className="text-2xl font-bold text-foreground">a—REST</p>
+                <p className="text-xs text-muted-foreground">{t('motionTools') || 'Motion Tools Skilled Work'}</p>
+              </div>
+            </div>
+
+            <div className="absolute top-4 right-4">
+              <Sparkles className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </Card>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          <Card className="p-6 hover:shadow-lg transition-shadow border-border/50">
-            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-              <FileText className="h-6 w-6 text-primary" />
-            </div>
-            <h4 className="text-xl font-semibold mb-2">Unique Health Card</h4>
-            <p className="text-muted-foreground">
-              Get your personal Health Card ID with format HC-COUNTRY-DATE-CODE. 
-              Secure, verifiable, and government-ready.
+        {/* Want to know more */}
+        <div className="mt-8 flex justify-end max-w-6xl mx-auto">
+          <button 
+            onClick={() => navigate("/auth")}
+            className="group flex flex-col items-end text-right hover:text-primary transition-colors"
+          >
+            <TrendingUp className="h-6 w-6 mb-2 text-muted-foreground group-hover:text-primary" />
+            <p className="text-xs text-muted-foreground group-hover:text-foreground">
+              {t('wantToKnowMore') || 'Want to know more'}<br />{t('aboutUs') || 'about us?'}
             </p>
-          </Card>
-
-          <Card className="p-6 hover:shadow-lg transition-shadow border-border/50">
-            <div className="h-12 w-12 rounded-lg bg-secondary/10 flex items-center justify-center mb-4">
-              <Activity className="h-6 w-6 text-secondary" />
-            </div>
-            <h4 className="text-xl font-semibold mb-2">AI Medical Triage</h4>
-            <p className="text-muted-foreground">
-              Evidence-based triage for human and animal health. Get instant 
-              guidance on symptoms with confidence scores and action plans.
-            </p>
-          </Card>
-
-          <Card className="p-6 hover:shadow-lg transition-shadow border-border/50">
-            <div className="h-12 w-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
-              <Shield className="h-6 w-6 text-accent" />
-            </div>
-            <h4 className="text-xl font-semibold mb-2">Privacy & Consent</h4>
-            <p className="text-muted-foreground">
-              Full control over your data with explicit consent management. 
-              Encrypted storage and transparent data usage policies.
-            </p>
-          </Card>
-
-          <Card className="p-6 hover:shadow-lg transition-shadow border-border/50">
-            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-              <Zap className="h-6 w-6 text-primary" />
-            </div>
-            <h4 className="text-xl font-semibold mb-2">Health Event Tracking</h4>
-            <p className="text-muted-foreground">
-              Log symptoms, lab reports, and medical visits. Build a complete 
-              longitudinal health record linked to your card.
-            </p>
-          </Card>
-
-          <Card className="p-6 hover:shadow-lg transition-shadow border-border/50">
-            <div className="h-12 w-12 rounded-lg bg-secondary/10 flex items-center justify-center mb-4">
-              <Users className="h-6 w-6 text-secondary" />
-            </div>
-            <h4 className="text-xl font-semibold mb-2">Multi-Species Support</h4>
-            <p className="text-muted-foreground">
-              Not just humans - get triage for your pets and livestock too. 
-              Species-aware clinical reasoning for animals.
-            </p>
-          </Card>
-
-          <Card className="p-6 hover:shadow-lg transition-shadow border-border/50">
-            <div className="h-12 w-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
-              <Heart className="h-6 w-6 text-accent" />
-            </div>
-            <h4 className="text-xl font-semibold mb-2">Multilingual</h4>
-            <p className="text-muted-foreground">
-              Accessible healthcare in your language. Support for voice input 
-              and text-to-speech in multiple languages.
-            </p>
-          </Card>
+          </button>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="container mx-auto px-4 py-20">
-        <Card className="max-w-4xl mx-auto p-8 md:p-12 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
+      <section className="container mx-auto px-6 py-16">
+        <Card className="max-w-4xl mx-auto p-8 md:p-12 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
           <div className="text-center">
             <h3 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Secure Your Health Journey?
+              {t('ctaTitle') || 'Ready to Transform Your Healthcare?'}
             </h3>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join thousands who trust HealthID for their medical records. 
-              Get your unique Health Card in under 2 minutes.
+              {t('ctaDescription') || 'Experience the future of healthcare management with AI-powered insights and secure data management.'}
             </p>
             <Button 
               size="lg" 
-              className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-lg px-10"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-10 rounded-full"
               onClick={() => navigate("/auth")}
             >
-              Create Your Health Card Now
+              {t('getStarted') || 'Get Started'}
             </Button>
           </div>
         </Card>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-8">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>© 2025 New Life. Privacy-first healthcare for everyone.</p>
+      <footer className="border-t border-border/10 py-8 mt-16">
+        <div className="container mx-auto px-6 text-center text-muted-foreground text-sm">
+          <p>© 2025 New Life. {t('footerText') || 'Privacy-first healthcare for everyone.'}</p>
         </div>
       </footer>
 
