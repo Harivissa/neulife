@@ -47,27 +47,27 @@ const Landing = () => {
           {/* Left Content */}
           <div className="space-y-8">
             <div className="inline-block rounded-full bg-muted/50 px-4 py-2 backdrop-blur-sm">
-              <p className="text-xs md:text-sm text-muted-foreground">{t('forYourUser') || 'For Your User'}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{t('forYourHealth') || 'For Your Health'}</p>
             </div>
             
             <div className="space-y-4">
               <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-                <span className="text-foreground">{t('made') || 'Made'}</span>
+                <span className="text-foreground">{t('aiPowered') || 'AI-Powered'}</span>
                 <br />
                 <span className="bg-gradient-to-r from-secondary via-primary to-accent bg-clip-text text-transparent">
-                  {t('usability') || 'Usability'}
+                  {t('healthcare') || 'Healthcare'}
                 </span>
               </h1>
               
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <span className="flex items-center gap-2">
-                  <span className="text-foreground font-medium">01</span> {t('design') || 'Design'}
+                  <span className="text-foreground font-medium">01</span> {t('triage') || 'Triage'}
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="text-foreground font-medium">02</span> {t('development') || 'Development'}
+                  <span className="text-foreground font-medium">02</span> {t('diagnosis') || 'Diagnosis'}
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="text-foreground font-medium">03</span> {t('maintenance') || 'Maintenance'}
+                  <span className="text-foreground font-medium">03</span> {t('care') || 'Care'}
                 </span>
               </div>
             </div>
@@ -78,7 +78,7 @@ const Landing = () => {
               onClick={() => navigate("/triage")}
             >
               <Play className="h-4 w-4 mr-2 fill-current" />
-              {t('viewShowreel') || 'View Showreel'}
+              {t('startTriage') || 'Start Triage'}
             </Button>
           </div>
 
@@ -89,11 +89,11 @@ const Landing = () => {
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary via-secondary to-accent opacity-80 blur-xl" />
               <div className="absolute inset-8 rounded-full bg-gradient-to-tr from-secondary via-primary to-accent" />
               
-              {/* Center Circle with Text */}
+              {/* Center Circle with Icon */}
               <div className="absolute inset-16 rounded-full bg-background border border-border flex items-center justify-center">
                 <div className="text-center">
-                  <Play className="h-8 w-8 mx-auto mb-2 text-foreground" />
-                  <p className="text-xs text-muted-foreground tracking-wider">Creative<br />Studio</p>
+                  <Sparkles className="h-8 w-8 mx-auto mb-2 text-foreground" />
+                  <p className="text-xs text-muted-foreground tracking-wider">AI<br />Health</p>
                 </div>
               </div>
             </div>
@@ -106,10 +106,10 @@ const Landing = () => {
         <div className="text-center max-w-3xl mx-auto">
           <p className="text-muted-foreground">
             {t('tagline') || 'We are a'}{' '}
-            <span className="text-foreground font-semibold">{t('digitalAgency') || 'Digital Agency'}</span>{' '}
+            <span className="text-foreground font-semibold">{t('healthPlatform') || 'Health Platform'}</span>{' '}
             {t('thatHelps') || 'That Helps'}{' '}
-            <span className="text-foreground font-semibold">{t('brands') || 'Brands'}</span>{' '}
-            {t('becomeDigital') || 'become the Digital New Life.'}
+            <span className="text-foreground font-semibold">{t('everyone') || 'Everyone'}</span>{' '}
+            {t('accessCare') || 'Access Quality Healthcare.'}
           </p>
         </div>
       </section>
