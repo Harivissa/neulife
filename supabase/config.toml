@@ -1,0 +1,7 @@
+project_id = "wlinsvczdrwnseaefsjq"
+
+[functions.generate-health-card]
+verify_jwt = true
+
+[functions.medical-triage]
+verify_jwt = false
