@@ -2,9 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Activity, Shield, Zap, Heart, FileText, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { useTranslation } from "react-i18next";
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card-tinted to-background">
@@ -18,14 +23,16 @@ const Landing = () => {
             <h1 className="text-2xl font-bold text-foreground">New Life</h1>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <LanguageSelector />
             <Button variant="ghost" onClick={() => navigate("/auth")}>
-              Sign In
+              {t('signIn')}
             </Button>
             <Button 
               className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90"
               onClick={() => navigate("/auth")}
             >
-              Get Started
+              {t('getStarted')}
             </Button>
           </div>
         </div>
@@ -40,15 +47,11 @@ const Landing = () => {
           </div>
           
           <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            Your Health Journey,
-            <br />
-            One Secure Card
+            {t('welcomeTitle')}
           </h2>
           
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Get your unique Health Card ID and access AI-powered medical triage. 
-            Track your health events, consult with confidence, and keep your medical 
-            history in one secure place.
+            {t('welcomeSubtitle')}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -57,7 +60,7 @@ const Landing = () => {
               className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-lg px-8"
               onClick={() => navigate("/auth")}
             >
-              Request Health Card
+              {t('requestHealthCard')}
             </Button>
             <Button 
               size="lg" 
@@ -65,7 +68,7 @@ const Landing = () => {
               className="text-lg px-8 border-primary/30"
               onClick={() => navigate("/triage")}
             >
-              Try AI Triage
+              {t('tryAITriage')}
             </Button>
           </div>
         </div>
@@ -74,8 +77,8 @@ const Landing = () => {
       {/* Features Grid */}
       <section className="container mx-auto px-4 py-20">
         <div className="text-center mb-12">
-          <h3 className="text-3xl font-bold mb-3">Comprehensive Healthcare Management</h3>
-          <p className="text-muted-foreground text-lg">Everything you need for modern healthcare</p>
+          <h3 className="text-3xl font-bold mb-3">{t('featuresTitle')}</h3>
+          <p className="text-muted-foreground text-lg">{t('featuresSubtitle')}</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
@@ -172,9 +175,11 @@ const Landing = () => {
       {/* Footer */}
       <footer className="border-t border-border/50 py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>© 2025 HealthID. Privacy-first healthcare for everyone.</p>
+          <p>© 2025 New Life. Privacy-first healthcare for everyone.</p>
         </div>
       </footer>
+
+      <VoiceAssistant />
     </div>
   );
 };

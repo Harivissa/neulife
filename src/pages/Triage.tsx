@@ -9,9 +9,14 @@ import { Heart, Activity, AlertTriangle, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { useTranslation } from "react-i18next";
 
 const Triage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [triageResult, setTriageResult] = useState<string>("");
   
@@ -92,8 +97,12 @@ const Triage = () => {
             <h1 className="text-2xl font-bold">New Life</h1>
           </div>
           <Button variant="outline" onClick={() => navigate("/")}>
-            Back to Home
+            {t('backToHome')}
           </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LanguageSelector />
+          </div>
         </div>
       </header>
 
@@ -242,6 +251,8 @@ const Triage = () => {
           )}
         </div>
       </main>
+      
+      <VoiceAssistant />
     </div>
   );
 };

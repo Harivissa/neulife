@@ -9,16 +9,22 @@ import { Heart, LogOut, QrCode, Shield, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { useTranslation } from "react-i18next";
 import QRCode from "qrcode";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [healthCard, setHealthCard] = useState<any>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [showCardRequest, setShowCardRequest] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -39,6 +45,17 @@ const Dashboard = () => {
       return;
     }
     setUser(user);
+    
+    // Check if user is admin
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    
+    setIsAdmin(!!roles);
+    
     await fetchProfile(user.id);
     await fetchHealthCard(user.id);
   };
@@ -131,13 +148,20 @@ const Dashboard = () => {
             <h1 className="text-2xl font-bold">New Life</h1>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <LanguageSelector />
+            {isAdmin && (
+              <Button variant="outline" onClick={() => navigate("/admin")}>
+                Admin
+              </Button>
+            )}
             <Button variant="outline" onClick={() => navigate("/triage")}>
               <Activity className="h-4 w-4 mr-2" />
-              AI Triage
+              {t('tryAITriage')}
             </Button>
             <Button variant="ghost" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+              {t('signOut')}
             </Button>
           </div>
         </div>
@@ -238,6 +262,8 @@ const Dashboard = () => {
           </Card>
         </div>
       </main>
+
+      <VoiceAssistant />
 
       <Dialog open={showCardRequest} onOpenChange={setShowCardRequest}>
         <DialogContent className="max-w-lg">
