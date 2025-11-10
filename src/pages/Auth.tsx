@@ -74,7 +74,12 @@ const Auth = () => {
           <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
             <Heart className="h-7 w-7 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold">HealthID</h1>
+          <h1 className="text-3xl font-bold">New Life</h1>
+        </div>
+
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold mb-2">Welcome to New Care</h2>
+          <p className="text-muted-foreground">Sign in to access your health dashboard</p>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">

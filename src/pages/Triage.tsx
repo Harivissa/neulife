@@ -89,7 +89,7 @@ const Triage = () => {
             <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
               <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold">HealthID</h1>
+            <h1 className="text-2xl font-bold">New Life</h1>
           </div>
           <Button variant="outline" onClick={() => navigate("/")}>
             Back to Home

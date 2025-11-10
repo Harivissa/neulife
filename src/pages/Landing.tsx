@@ -15,7 +15,7 @@ const Landing = () => {
             <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
               <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">HealthID</h1>
+            <h1 className="text-2xl font-bold text-foreground">New Life</h1>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" onClick={() => navigate("/auth")}>
