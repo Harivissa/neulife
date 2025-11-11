@@ -13,10 +13,19 @@ const resources = {
       backToHome: "Back to Home",
       
       // Landing
-      welcomeTitle: "Your Health Journey, One Secure Card",
-      welcomeSubtitle: "Get your unique Health Card ID and access AI-powered medical triage. Track your health events, consult with confidence, and keep your medical history in one secure place.",
+      welcomeTitle: "NeuLife: Your Intelligent Healthcare Companion",
+      welcomeSubtitle: "Experience AI-powered medical triage, personalized health insights, and secure care management—all in one privacy-first platform",
       requestHealthCard: "Request Health Card",
       tryAITriage: "Try AI Triage",
+      
+      // CTA Section
+      cta: {
+        title: "NeuLife - Where Innovation Meets Healthcare",
+        description: "Transform your healthcare experience with NeuLife's AI-powered platform. Get instant medical triage, personalized health insights, and comprehensive care management—all designed with your privacy and well-being in mind. Join thousands who trust NeuLife for smarter, faster, and more accessible healthcare.",
+        button: "Begin Your Journey"
+      },
+      
+      footerText: "NeuLife - Intelligent, Secure, Compassionate Healthcare for All.",
       
       // Features
       featuresTitle: "Comprehensive Healthcare Management",
@@ -29,7 +38,7 @@ const resources = {
       privacyConsentDesc: "Full control over your data with explicit consent management. Encrypted storage and transparent data usage policies.",
       
       // Auth
-      welcomeAuth: "Welcome to New Care",
+      welcomeAuth: "Welcome to NeuLife",
       signInAccess: "Sign in to access your health dashboard",
       fullName: "Full Name",
       email: "Email",

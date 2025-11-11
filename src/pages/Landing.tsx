@@ -186,17 +186,17 @@ const Landing = () => {
         <Card className="max-w-4xl mx-auto p-8 md:p-12 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
           <div className="text-center">
             <h3 className="text-3xl md:text-4xl font-bold mb-4">
-              {t('ctaTitle') || 'Start Your Journey with NeuLife'}
+              {t('cta.title')}
             </h3>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              {t('ctaDescription') || 'NeuLife brings AI-powered healthcare to everyone. Get instant medical triage, accurate diagnosis, and secure care management—all in one platform.'}
+              {t('cta.description')}
             </p>
             <Button 
               size="lg" 
               className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-10 rounded-full"
               onClick={() => navigate("/auth")}
             >
-              {t('getStarted') || 'Get Started'}
+              {t('cta.button')}
             </Button>
           </div>
         </Card>
