@@ -21,7 +21,7 @@ const Landing = () => {
               <div className="h-2 w-2 rounded-full bg-foreground" />
               <div className="h-2 w-2 rounded-full bg-foreground" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">New Life</h1>
+            <h1 className="text-xl font-bold text-foreground">NeuLife</h1>
           </div>
           
 
@@ -186,10 +186,10 @@ const Landing = () => {
         <Card className="max-w-4xl mx-auto p-8 md:p-12 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
           <div className="text-center">
             <h3 className="text-3xl md:text-4xl font-bold mb-4">
-              {t('ctaTitle') || 'Start Your Journey with New Life'}
+              {t('ctaTitle') || 'Start Your Journey with NeuLife'}
             </h3>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              {t('ctaDescription') || 'New Life brings AI-powered healthcare to everyone. Get instant medical triage, accurate diagnosis, and secure care management—all in one platform.'}
+              {t('ctaDescription') || 'NeuLife brings AI-powered healthcare to everyone. Get instant medical triage, accurate diagnosis, and secure care management—all in one platform.'}
             </p>
             <Button 
               size="lg" 
@@ -205,7 +205,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="border-t border-border/10 py-8 mt-16">
         <div className="container mx-auto px-6 text-center text-muted-foreground text-sm">
-          <p>© 2025 New Life. {t('footerText') || 'Privacy-first healthcare for everyone.'}</p>
+          <p>© 2025 NeuLife. {t('footerText') || 'Privacy-first healthcare for everyone.'}</p>
         </div>
       </footer>
 
