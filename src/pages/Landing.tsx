@@ -99,12 +99,12 @@ const Landing = () => {
       {/* Features Grid */}
       <section className="container mx-auto px-6 py-12 md:py-16">
         <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {/* Blue Card - UX/UI Design */}
+          {/* Blue Card - AI Triage */}
           <Card className="relative overflow-hidden bg-primary border-0 p-8 group hover:scale-105 transition-transform">
             <div className="space-y-6">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
-                  <p className="text-xs text-primary-foreground/80 tracking-wider uppercase">UX/UI DESIGN</p>
+                  <p className="text-xs text-primary-foreground/80 tracking-wider uppercase">AI-POWERED</p>
                   <div className="h-0.5 w-8 bg-primary-foreground" />
                 </div>
               </div>
@@ -112,25 +112,25 @@ const Landing = () => {
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-gradient-to-br from-secondary to-accent" />
-                  <span className="text-5xl font-bold text-primary-foreground">12k</span>
+                  <span className="text-5xl font-bold text-primary-foreground">24/7</span>
                 </div>
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-accent to-primary opacity-60" />
               </div>
 
               <p className="text-xs text-primary-foreground/70">
-                {t('uxuiDescription') || '+3.5% Up from Yesterday'}
+                {t('aiTriageDescription') || 'Instant Medical Triage Available'}
               </p>
             </div>
             
             <div className="absolute -right-8 -bottom-8 h-32 w-32 rounded-full bg-primary-foreground/10" />
           </Card>
 
-          {/* Yellow Card - Clean Code */}
+          {/* Yellow Card - Smart Diagnosis */}
           <Card className="relative overflow-hidden bg-accent border-0 p-8 group hover:scale-105 transition-transform">
             <div className="space-y-6">
               <div className="space-y-2">
-                <p className="text-sm text-accent-foreground font-medium">{t('cleanCode') || 'Clean'} <span className="font-bold">Code</span></p>
-                <p className="text-2xl text-accent-foreground font-bold">{t('qualityStandards') || 'Quality Standards'}</p>
+                <p className="text-sm text-accent-foreground font-medium">{t('smartHealth') || 'Smart'} <span className="font-bold">Health</span></p>
+                <p className="text-2xl text-accent-foreground font-bold">{t('accurateDiagnosis') || 'Accurate Diagnosis'}</p>
               </div>
 
               {/* Gradient Arc */}
@@ -139,13 +139,13 @@ const Landing = () => {
               </div>
 
               <div className="space-y-1">
-                <p className="text-xs text-accent-foreground/70">{t('frontEnd') || 'Front-End'}</p>
-                <p className="text-xs text-accent-foreground font-semibold">{t('development') || 'Development'}</p>
+                <p className="text-xs text-accent-foreground/70">{t('aiAssisted') || 'AI-Assisted'}</p>
+                <p className="text-xs text-accent-foreground font-semibold">{t('healthAnalysis') || 'Health Analysis'}</p>
               </div>
             </div>
           </Card>
 
-          {/* White Card - Motion Design */}
+          {/* White Card - Secure Care */}
           <Card className="relative overflow-hidden bg-card-elevated border border-border p-8 group hover:scale-105 transition-transform">
             <div className="space-y-6">
               <div className="flex items-center justify-center">
@@ -155,9 +155,9 @@ const Landing = () => {
               </div>
 
               <div className="space-y-2 text-center">
-                <p className="text-lg font-semibold text-foreground">{t('motionDesign') || 'Motion Design'}</p>
-                <p className="text-2xl font-bold text-foreground">a—REST</p>
-                <p className="text-xs text-muted-foreground">{t('motionTools') || 'Motion Tools Skilled Work'}</p>
+                <p className="text-lg font-semibold text-foreground">{t('secureData') || 'Secure Data'}</p>
+                <p className="text-2xl font-bold text-foreground">{t('privacyFirst') || 'Privacy First'}</p>
+                <p className="text-xs text-muted-foreground">{t('encryptedStorage') || 'End-to-End Encrypted Storage'}</p>
               </div>
             </div>
 
