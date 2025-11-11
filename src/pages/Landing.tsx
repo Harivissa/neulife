@@ -24,12 +24,6 @@ const Landing = () => {
             <h1 className="text-xl font-bold text-foreground">New Life</h1>
           </div>
           
-          <nav className="hidden md:flex items-center gap-8 text-sm">
-            <button className="text-foreground hover:text-primary transition-colors">{t('home') || 'Home'}</button>
-            <button className="text-muted-foreground hover:text-foreground transition-colors">{t('success') || 'Success'}</button>
-            <button className="text-muted-foreground hover:text-foreground transition-colors">{t('categories') || 'Categories'}</button>
-            <button className="text-muted-foreground hover:text-foreground transition-colors" onClick={() => navigate("/auth")}>{t('pricing') || 'Pricing'}</button>
-          </nav>
 
           <div className="flex items-center gap-3">
             <ThemeToggle />
@@ -58,18 +52,6 @@ const Landing = () => {
                   {t('healthcare') || 'Healthcare'}
                 </span>
               </h1>
-              
-              <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                <span className="flex items-center gap-2">
-                  <span className="text-foreground font-medium">01</span> {t('triage') || 'Triage'}
-                </span>
-                <span className="flex items-center gap-2">
-                  <span className="text-foreground font-medium">02</span> {t('diagnosis') || 'Diagnosis'}
-                </span>
-                <span className="flex items-center gap-2">
-                  <span className="text-foreground font-medium">03</span> {t('care') || 'Care'}
-                </span>
-              </div>
             </div>
 
             <Button 
