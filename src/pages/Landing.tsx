@@ -49,7 +49,7 @@ const Landing = () => {
               <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-[1.1] tracking-tight">
                 <span className="text-foreground">Smart</span>
                 <br />
-                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   Healthcare
                 </span>
                 <br />
@@ -84,8 +84,8 @@ const Landing = () => {
           <div className="relative flex items-center justify-center lg:justify-end">
             <div className="relative w-72 h-72 md:w-96 md:h-96">
               {/* Animated gradient orbs */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 via-secondary/30 to-accent/30 blur-3xl animate-pulse" />
-              <div className="absolute inset-12 rounded-full bg-gradient-to-tr from-primary via-secondary to-accent animate-spin-slow" style={{ animationDuration: '20s' }} />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 blur-3xl animate-pulse" />
+              <div className="absolute inset-12 rounded-full bg-gradient-to-tr from-primary to-secondary animate-spin-slow" style={{ animationDuration: '20s' }} />
               
               {/* Center content */}
               <div className="absolute inset-20 rounded-full bg-background/95 backdrop-blur-xl border-2 border-primary/20 shadow-2xl flex items-center justify-center">
@@ -108,19 +108,19 @@ const Landing = () => {
       <section className="container mx-auto px-6 py-16 border-y border-border/50">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
           <div className="text-center space-y-2">
-            <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">24/7</p>
+            <p className="text-4xl md:text-5xl font-bold text-primary">24/7</p>
             <p className="text-sm text-muted-foreground">AI Support</p>
           </div>
           <div className="text-center space-y-2">
-            <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">100%</p>
+            <p className="text-4xl md:text-5xl font-bold text-secondary">100%</p>
             <p className="text-sm text-muted-foreground">Private & Secure</p>
           </div>
           <div className="text-center space-y-2">
-            <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">Instant</p>
+            <p className="text-4xl md:text-5xl font-bold text-accent">Instant</p>
             <p className="text-sm text-muted-foreground">Triage</p>
           </div>
           <div className="text-center space-y-2">
-            <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">Smart</p>
+            <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Smart</p>
             <p className="text-sm text-muted-foreground">Analysis</p>
           </div>
         </div>
@@ -150,11 +150,11 @@ const Landing = () => {
               
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-secondary to-accent shadow-lg" />
+                  <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-secondary to-secondary/70 shadow-lg" />
                   <span className="text-6xl font-black text-primary-foreground">24/7</span>
                 </div>
                 <div className="flex gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-accent to-primary opacity-70" />
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-secondary/80 to-secondary/60 opacity-70" />
                   <div className="h-8 w-8 rounded-lg bg-primary-foreground/30" />
                 </div>
               </div>
@@ -220,7 +220,7 @@ const Landing = () => {
 
       {/* CTA Section */}
       <section className="container mx-auto px-6 py-24">
-        <Card className="max-w-5xl mx-auto p-12 md:p-16 bg-gradient-to-br from-primary via-secondary to-accent border-0 shadow-2xl relative overflow-hidden">
+        <Card className="max-w-5xl mx-auto p-12 md:p-16 bg-gradient-to-br from-primary to-secondary border-0 shadow-2xl relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-white/10" />
           <div className="relative text-center space-y-8">
             <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
