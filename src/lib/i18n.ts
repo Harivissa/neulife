@@ -13,23 +13,48 @@ const resources = {
       backToHome: "Back to Home",
       
       // Landing
-      welcomeTitle: "NeuLife: Your Intelligent Healthcare Companion",
-      welcomeSubtitle: "Experience AI-powered medical triage, personalized health insights, and secure care management—all in one privacy-first platform",
-      requestHealthCard: "Request Health Card",
-      tryAITriage: "Try AI Triage",
+      forYourHealth: 'Built by young innovators. Trusted for every life.',
+      startTriage: 'Start My Health Check',
+      learnMore: 'How NeuLife Works',
+      heroTitle: 'Your Health. Simplified by AI, Guided with Care.',
+      heroSubtitle: 'Get instant, safe medical triage and personalized health insights — in your language, anytime you need help.',
+      
+      // Stats
+      stat1Title: '24/7',
+      stat1Desc: 'AI Health Assistant – Always here when you need answers',
+      stat2Title: '100%',
+      stat2Desc: 'Your Data, Fully Yours – Encrypted, protected, never shared',
+      stat3Title: 'Instant',
+      stat3Desc: 'Medical Insight – Understand symptoms in seconds',
+      stat4Title: 'Smart',
+      stat4Desc: 'Safe Analysis – Backed by verified medical data',
+      
+      // Features Section
+      featuresTitle: 'Where Artificial Intelligence Meets Human Empathy',
+      featuresSubtitle: 'NeuLife blends the precision of AI with medical understanding, delivering safe, multilingual healthcare support — made to be understood by everyone.',
+      
+      // Feature Cards
+      aiTriageTitle: '24/7 Health Support',
+      aiTriageDescription: "Get help anytime — midnight fever or morning doubt, we're here for you.",
+      smartHealthTitle: 'Smart Symptom Analysis',
+      smartHealthDescription: 'Know what your symptoms might mean, in seconds, in your own language.',
+      secureDataTitle: 'Privacy First',
+      secureDataDescription: 'Your health history stays encrypted and fully under your control.',
       
       // CTA Section
       cta: {
-        title: "Ready to Experience Better Healthcare?",
-        description: "Join NeuLife today and get instant access to AI-powered medical support.",
-        button: "Get Started Now"
+        title: 'Your New Health Companion Is Here.',
+        description: 'Join NeuLife and experience healthcare that listens, learns, and speaks your language. Smarter, safer, and always by your side.',
+        button: "Join NeuLife — It's Free"
       },
       
-      footerText: "NeuLife - Intelligent, Secure, Compassionate Healthcare for All.",
+      footerText: 'Intelligent. Secure. Compassionate Healthcare for Every Life.',
+      footerCredit: 'Made with ❤️ by young innovators — bridging medicine and AI for India and the world.',
       
-      // Features
-      featuresTitle: "Comprehensive Healthcare Management",
-      featuresSubtitle: "Everything you need for modern healthcare",
+      requestHealthCard: "Request Health Card",
+      tryAITriage: "Try AI Triage",
+      
+      // Additional Features (not used on landing)
       uniqueHealthCard: "Unique Health Card",
       uniqueHealthCardDesc: "Get your personal Health Card ID with format HC-COUNTRY-DATE-CODE. Secure, verifiable, and government-ready.",
       aiMedicalTriage: "AI Medical Triage",
@@ -98,6 +123,41 @@ const resources = {
   },
   hi: {
     translation: {
+      // Landing
+      forYourHealth: 'युवा नवप्रवर्तकों द्वारा निर्मित। हर जीवन के लिए विश्वसनीय।',
+      startTriage: 'अपनी स्वास्थ्य जांच शुरू करें',
+      learnMore: 'न्यूलाइफ कैसे काम करता है',
+      heroTitle: 'आपका स्वास्थ्य। एआई द्वारा सरल, देखभाल के साथ निर्देशित।',
+      heroSubtitle: 'तत्काल, सुरक्षित चिकित्सा ट्राइएज और व्यक्तिगत स्वास्थ्य अंतर्दृष्टि प्राप्त करें — आपकी भाषा में, जब भी आपको मदद की आवश्यकता हो।',
+      
+      stat1Title: '24/7',
+      stat1Desc: 'एआई स्वास्थ्य सहायक – जब आपको उत्तर चाहिए तो हमेशा यहाँ',
+      stat2Title: '100%',
+      stat2Desc: 'आपका डेटा, पूरी तरह आपका – एन्क्रिप्टेड, सुरक्षित, कभी साझा नहीं',
+      stat3Title: 'तुरंत',
+      stat3Desc: 'चिकित्सा अंतर्दृष्टि – सेकंडों में लक्षण समझें',
+      stat4Title: 'स्मार्ट',
+      stat4Desc: 'सुरक्षित विश्लेषण – सत्यापित चिकित्सा डेटा द्वारा समर्थित',
+      
+      featuresTitle: 'जहां कृत्रिम बुद्धिमत्ता मानवीय सहानुभूति से मिलती है',
+      featuresSubtitle: 'न्यूलाइफ एआई की सटीकता को चिकित्सा समझ के साथ मिलाता है, सुरक्षित, बहुभाषी स्वास्थ्य सहायता प्रदान करता है — सभी के लिए समझने योग्य।',
+      
+      aiTriageTitle: '24/7 स्वास्थ्य सहायता',
+      aiTriageDescription: 'किसी भी समय मदद पाएं — आधी रात का बुखार हो या सुबह का संदेह, हम आपके लिए यहाँ हैं।',
+      smartHealthTitle: 'स्मार्ट लक्षण विश्लेषण',
+      smartHealthDescription: 'जानें कि आपके लक्षणों का क्या अर्थ हो सकता है, सेकंडों में, आपकी अपनी भाषा में।',
+      secureDataTitle: 'गोपनीयता पहले',
+      secureDataDescription: 'आपका स्वास्थ्य इतिहास एन्क्रिप्टेड रहता है और पूरी तरह आपके नियंत्रण में।',
+      
+      cta: {
+        title: 'आपका नया स्वास्थ्य साथी यहाँ है।',
+        description: 'न्यूलाइफ से जुड़ें और स्वास्थ्य सेवा का अनुभव करें जो सुनती है, सीखती है और आपकी भाषा बोलती है। स्मार्ट, सुरक्षित, और हमेशा आपके साथ।',
+        button: 'न्यूलाइफ से जुड़ें — यह मुफ़्त है'
+      },
+      
+      footerText: 'बुद्धिमान। सुरक्षित। हर जीवन के लिए दयालु स्वास्थ्य सेवा।',
+      footerCredit: '❤️ के साथ युवा नवप्रवर्तकों द्वारा बनाया गया — भारत और दुनिया के लिए चिकित्सा और एआई को जोड़ना।',
+      
       signIn: "साइन इन करें",
       signUp: "साइन अप करें",
       signOut: "साइन आउट",
@@ -109,8 +169,6 @@ const resources = {
       requestHealthCard: "हेल्थ कार्ड का अनुरोध करें",
       tryAITriage: "एआई ट्राइएज आज़माएं",
       
-      featuresTitle: "व्यापक स्वास्थ्य प्रबंधन",
-      featuresSubtitle: "आधुनिक स्वास्थ्य सेवा के लिए आपको जो कुछ भी चाहिए",
       uniqueHealthCard: "अनूठा हेल्थ कार्ड",
       uniqueHealthCardDesc: "HC-देश-तारीख-कोड प्रारूप के साथ अपना व्यक्तिगत हेल्थ कार्ड आईडी प्राप्त करें।",
       aiMedicalTriage: "एआई चिकित्सा ट्राइएज",
