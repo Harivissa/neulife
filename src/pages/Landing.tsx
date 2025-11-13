@@ -67,7 +67,7 @@ const Landing = () => {
                 onClick={() => navigate("/triage")}
               >
                 <Play className="h-5 w-5 mr-2 fill-current" />
-                {t('startTriage') || 'Start Triage'}
+                {t('startTriage')}
               </Button>
               <Button 
                 size="lg"
@@ -75,7 +75,7 @@ const Landing = () => {
                 className="rounded-full px-8 border-2"
                 onClick={() => navigate("/auth")}
               >
-                Learn More
+                {t('learnMore')}
               </Button>
             </div>
           </div>
@@ -106,22 +106,22 @@ const Landing = () => {
 
       {/* Stats Section */}
       <section className="container mx-auto px-6 py-16 border-y border-border/50">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-          <div className="text-center space-y-2">
-            <p className="text-4xl md:text-5xl font-bold text-primary">24/7</p>
-            <p className="text-sm text-muted-foreground">AI Support</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          <div className="text-center space-y-3">
+            <p className="text-4xl md:text-5xl font-bold text-primary">{t('stat1Title')}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{t('stat1Desc')}</p>
           </div>
-          <div className="text-center space-y-2">
-            <p className="text-4xl md:text-5xl font-bold text-secondary">100%</p>
-            <p className="text-sm text-muted-foreground">Private & Secure</p>
+          <div className="text-center space-y-3">
+            <p className="text-4xl md:text-5xl font-bold text-secondary">{t('stat2Title')}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{t('stat2Desc')}</p>
           </div>
-          <div className="text-center space-y-2">
-            <p className="text-4xl md:text-5xl font-bold text-accent">Instant</p>
-            <p className="text-sm text-muted-foreground">Triage</p>
+          <div className="text-center space-y-3">
+            <p className="text-4xl md:text-5xl font-bold text-accent">{t('stat3Title')}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{t('stat3Desc')}</p>
           </div>
-          <div className="text-center space-y-2">
-            <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Smart</p>
-            <p className="text-sm text-muted-foreground">Analysis</p>
+          <div className="text-center space-y-3">
+            <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">{t('stat4Title')}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{t('stat4Desc')}</p>
           </div>
         </div>
       </section>
@@ -130,10 +130,10 @@ const Landing = () => {
       <section className="container mx-auto px-6 py-20 md:py-24">
         <div className="text-center mb-16 space-y-4">
           <h2 className="text-4xl md:text-5xl font-bold text-foreground">
-            Why Choose <span className="text-primary">NeuLife</span>?
+            {t('featuresTitle')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Advanced AI technology meets compassionate care
+            {t('featuresSubtitle')}
           </p>
         </div>
         
@@ -159,9 +159,12 @@ const Landing = () => {
                 </div>
               </div>
 
-              <p className="text-sm text-primary-foreground/90 font-medium leading-relaxed">
-                {t('aiTriageDescription') || 'Instant medical triage whenever you need it'}
-              </p>
+              <div className="space-y-2">
+                <p className="text-lg font-bold text-primary-foreground">{t('aiTriageTitle')}</p>
+                <p className="text-sm text-primary-foreground/90 font-medium leading-relaxed">
+                  {t('aiTriageDescription')}
+                </p>
+              </div>
             </div>
             
             <div className="absolute -right-12 -bottom-12 h-40 w-40 rounded-full bg-primary-foreground/10 blur-2xl" />
@@ -171,11 +174,8 @@ const Landing = () => {
           <Card className="relative overflow-hidden bg-accent border-0 p-8 group hover:scale-[1.02] hover:shadow-2xl transition-all duration-300">
             <div className="space-y-6">
               <div className="space-y-3">
-                <p className="text-sm text-accent-foreground/90 font-medium">
-                  {t('smartHealth') || 'Smart'} <span className="font-black">Health</span>
-                </p>
                 <p className="text-3xl text-accent-foreground font-black leading-tight">
-                  {t('accurateDiagnosis') || 'Accurate Diagnosis'}
+                  {t('smartHealthTitle')}
                 </p>
               </div>
 
@@ -185,8 +185,9 @@ const Landing = () => {
               </div>
 
               <div className="space-y-2">
-                <p className="text-xs text-accent-foreground/80 uppercase tracking-wider">{t('aiAssisted') || 'AI-Assisted'}</p>
-                <p className="text-sm text-accent-foreground font-bold">{t('healthAnalysis') || 'Health Analysis'}</p>
+                <p className="text-sm text-accent-foreground/90 font-medium leading-relaxed">
+                  {t('smartHealthDescription')}
+                </p>
               </div>
             </div>
           </Card>
@@ -196,16 +197,15 @@ const Landing = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-center">
                 <div className="relative h-36 w-36">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 animate-pulse" />
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 animate-pulse" />
                   <div className="absolute inset-4 rounded-full bg-gradient-to-tr from-muted via-foreground/10 to-muted shadow-lg" />
                 </div>
               </div>
 
               <div className="space-y-3 text-center">
-                <p className="text-lg font-bold text-primary">{t('secureData') || 'Secure Data'}</p>
-                <p className="text-3xl font-black text-foreground">{t('privacyFirst') || 'Privacy First'}</p>
+                <p className="text-3xl font-black text-foreground">{t('secureDataTitle')}</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {t('encryptedStorage') || 'End-to-end encrypted storage'}
+                  {t('secureDataDescription')}
                 </p>
               </div>
             </div>
@@ -242,8 +242,13 @@ const Landing = () => {
 
       {/* Footer */}
       <footer className="border-t border-border/10 py-8 mt-16">
-        <div className="container mx-auto px-6 text-center text-muted-foreground text-sm">
-          <p>© 2025 NeuLife. {t('footerText') || 'Privacy-first healthcare for everyone.'}</p>
+        <div className="container mx-auto px-6 text-center space-y-2">
+          <p className="text-muted-foreground text-sm">
+            © 2025 NeuLife. {t('footerText')}
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {t('footerCredit')}
+          </p>
         </div>
       </footer>
 
