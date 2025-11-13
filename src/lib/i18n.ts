@@ -20,9 +20,9 @@ const resources = {
       
       // CTA Section
       cta: {
-        title: "NeuLife - Where Innovation Meets Healthcare",
-        description: "Transform your healthcare experience with NeuLife's AI-powered platform. Get instant medical triage, personalized health insights, and comprehensive care management—all designed with your privacy and well-being in mind. Join thousands who trust NeuLife for smarter, faster, and more accessible healthcare.",
-        button: "Begin Your Journey"
+        title: "Ready to Experience Better Healthcare?",
+        description: "Join NeuLife today and get instant access to AI-powered medical support.",
+        button: "Get Started Now"
       },
       
       footerText: "NeuLife - Intelligent, Secure, Compassionate Healthcare for All.",

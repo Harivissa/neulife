@@ -36,164 +36,202 @@ const Landing = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-6 py-16 md:py-24">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="container mx-auto px-6 py-20 md:py-32">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
-          <div className="space-y-8">
-            <div className="inline-block rounded-full bg-muted/50 px-4 py-2 backdrop-blur-sm">
-              <p className="text-xs md:text-sm text-muted-foreground">{t('forYourHealth') || 'For Your Health'}</p>
+          <div className="space-y-8 animate-fade-in">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-5 py-2.5 backdrop-blur-sm border border-primary/20">
+              <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              <p className="text-sm font-medium text-foreground">{t('forYourHealth') || 'AI-Powered Healthcare'}</p>
             </div>
             
-            <div className="space-y-4">
-              <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-                <span className="text-foreground">{t('aiPowered') || 'AI-Powered'}</span>
+            <div className="space-y-6">
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-[1.1] tracking-tight">
+                <span className="text-foreground">Smart</span>
                 <br />
-                <span className="bg-gradient-to-r from-secondary via-primary to-accent bg-clip-text text-transparent">
-                  {t('healthcare') || 'Healthcare'}
+                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  Healthcare
                 </span>
+                <br />
+                <span className="text-foreground">For All</span>
               </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-lg">
+                Get instant medical triage, personalized insights, and comprehensive care—powered by AI.
+              </p>
             </div>
 
-            <Button 
-              size="lg"
-              className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-8"
-              onClick={() => navigate("/triage")}
-            >
-              <Play className="h-4 w-4 mr-2 fill-current" />
-              {t('startTriage') || 'Start Triage'}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button 
+                size="lg"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 shadow-lg hover:shadow-xl transition-all"
+                onClick={() => navigate("/triage")}
+              >
+                <Play className="h-5 w-5 mr-2 fill-current" />
+                {t('startTriage') || 'Start Triage'}
+              </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                className="rounded-full px-8 border-2"
+                onClick={() => navigate("/auth")}
+              >
+                Learn More
+              </Button>
+            </div>
           </div>
 
           {/* Right Graphic */}
-          <div className="relative flex items-center justify-center">
-            <div className="relative w-64 h-64 md:w-80 md:h-80">
-              {/* Gradient Circle */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary via-secondary to-accent opacity-80 blur-xl" />
-              <div className="absolute inset-8 rounded-full bg-gradient-to-tr from-secondary via-primary to-accent" />
+          <div className="relative flex items-center justify-center lg:justify-end">
+            <div className="relative w-72 h-72 md:w-96 md:h-96">
+              {/* Animated gradient orbs */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 via-secondary/30 to-accent/30 blur-3xl animate-pulse" />
+              <div className="absolute inset-12 rounded-full bg-gradient-to-tr from-primary via-secondary to-accent animate-spin-slow" style={{ animationDuration: '20s' }} />
               
-              {/* Center Circle with Icon */}
-              <div className="absolute inset-16 rounded-full bg-background border border-border flex items-center justify-center">
-                <div className="text-center">
-                  <Sparkles className="h-8 w-8 mx-auto mb-2 text-foreground" />
-                  <p className="text-xs text-muted-foreground tracking-wider">AI<br />Health</p>
+              {/* Center content */}
+              <div className="absolute inset-20 rounded-full bg-background/95 backdrop-blur-xl border-2 border-primary/20 shadow-2xl flex items-center justify-center">
+                <div className="text-center space-y-2">
+                  <Sparkles className="h-12 w-12 mx-auto text-primary animate-pulse" />
+                  <p className="text-sm font-bold text-foreground">AI Health</p>
+                  <p className="text-xs text-muted-foreground">24/7 Available</p>
                 </div>
               </div>
+              
+              {/* Floating elements */}
+              <div className="absolute top-0 right-0 h-16 w-16 rounded-full bg-primary/20 backdrop-blur-sm animate-bounce" style={{ animationDuration: '3s' }} />
+              <div className="absolute bottom-0 left-0 h-12 w-12 rounded-full bg-secondary/20 backdrop-blur-sm animate-bounce" style={{ animationDuration: '4s', animationDelay: '0.5s' }} />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Tagline Section */}
-      <section className="container mx-auto px-6 py-12">
-        <div className="text-center max-w-3xl mx-auto">
-          <p className="text-muted-foreground">
-            {t('tagline') || 'We are a'}{' '}
-            <span className="text-foreground font-semibold">{t('healthPlatform') || 'Health Platform'}</span>{' '}
-            {t('thatHelps') || 'That Helps'}{' '}
-            <span className="text-foreground font-semibold">{t('everyone') || 'Everyone'}</span>{' '}
-            {t('accessCare') || 'Access Quality Healthcare.'}
-          </p>
+      {/* Stats Section */}
+      <section className="container mx-auto px-6 py-16 border-y border-border/50">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+          <div className="text-center space-y-2">
+            <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">24/7</p>
+            <p className="text-sm text-muted-foreground">AI Support</p>
+          </div>
+          <div className="text-center space-y-2">
+            <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">100%</p>
+            <p className="text-sm text-muted-foreground">Private & Secure</p>
+          </div>
+          <div className="text-center space-y-2">
+            <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">Instant</p>
+            <p className="text-sm text-muted-foreground">Triage</p>
+          </div>
+          <div className="text-center space-y-2">
+            <p className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">Smart</p>
+            <p className="text-sm text-muted-foreground">Analysis</p>
+          </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="container mx-auto px-6 py-12 md:py-16">
-        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+      <section className="container mx-auto px-6 py-20 md:py-24">
+        <div className="text-center mb-16 space-y-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground">
+            Why Choose <span className="text-primary">NeuLife</span>?
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Advanced AI technology meets compassionate care
+          </p>
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {/* Blue Card - AI Triage */}
-          <Card className="relative overflow-hidden bg-primary border-0 p-8 group hover:scale-105 transition-transform">
+          <Card className="relative overflow-hidden bg-primary border-0 p-8 group hover:scale-[1.02] hover:shadow-2xl transition-all duration-300">
             <div className="space-y-6">
               <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <p className="text-xs text-primary-foreground/80 tracking-wider uppercase">AI-POWERED</p>
-                  <div className="h-0.5 w-8 bg-primary-foreground" />
+                <div className="space-y-2">
+                  <p className="text-xs text-primary-foreground/90 tracking-widest uppercase font-semibold">AI-Powered</p>
+                  <div className="h-1 w-12 bg-primary-foreground rounded-full" />
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-secondary to-accent" />
-                  <span className="text-5xl font-bold text-primary-foreground">24/7</span>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-secondary to-accent shadow-lg" />
+                  <span className="text-6xl font-black text-primary-foreground">24/7</span>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-accent to-primary opacity-60" />
+                <div className="flex gap-3">
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-accent to-primary opacity-70" />
+                  <div className="h-8 w-8 rounded-lg bg-primary-foreground/30" />
+                </div>
               </div>
 
-              <p className="text-xs text-primary-foreground/70">
-                {t('aiTriageDescription') || 'Instant Medical Triage Available'}
+              <p className="text-sm text-primary-foreground/90 font-medium leading-relaxed">
+                {t('aiTriageDescription') || 'Instant medical triage whenever you need it'}
               </p>
             </div>
             
-            <div className="absolute -right-8 -bottom-8 h-32 w-32 rounded-full bg-primary-foreground/10" />
+            <div className="absolute -right-12 -bottom-12 h-40 w-40 rounded-full bg-primary-foreground/10 blur-2xl" />
           </Card>
 
           {/* Yellow Card - Smart Diagnosis */}
-          <Card className="relative overflow-hidden bg-accent border-0 p-8 group hover:scale-105 transition-transform">
+          <Card className="relative overflow-hidden bg-accent border-0 p-8 group hover:scale-[1.02] hover:shadow-2xl transition-all duration-300">
             <div className="space-y-6">
-              <div className="space-y-2">
-                <p className="text-sm text-accent-foreground font-medium">{t('smartHealth') || 'Smart'} <span className="font-bold">Health</span></p>
-                <p className="text-2xl text-accent-foreground font-bold">{t('accurateDiagnosis') || 'Accurate Diagnosis'}</p>
+              <div className="space-y-3">
+                <p className="text-sm text-accent-foreground/90 font-medium">
+                  {t('smartHealth') || 'Smart'} <span className="font-black">Health</span>
+                </p>
+                <p className="text-3xl text-accent-foreground font-black leading-tight">
+                  {t('accurateDiagnosis') || 'Accurate Diagnosis'}
+                </p>
               </div>
 
               {/* Gradient Arc */}
-              <div className="relative h-24 flex items-center justify-center">
-                <div className="w-32 h-32 rounded-full border-8 border-accent-foreground/20 border-t-secondary border-l-primary" />
+              <div className="relative h-28 flex items-center justify-center">
+                <div className="w-40 h-40 rounded-full border-[12px] border-accent-foreground/10 border-t-secondary border-l-primary shadow-inner" />
               </div>
 
-              <div className="space-y-1">
-                <p className="text-xs text-accent-foreground/70">{t('aiAssisted') || 'AI-Assisted'}</p>
-                <p className="text-xs text-accent-foreground font-semibold">{t('healthAnalysis') || 'Health Analysis'}</p>
+              <div className="space-y-2">
+                <p className="text-xs text-accent-foreground/80 uppercase tracking-wider">{t('aiAssisted') || 'AI-Assisted'}</p>
+                <p className="text-sm text-accent-foreground font-bold">{t('healthAnalysis') || 'Health Analysis'}</p>
               </div>
             </div>
           </Card>
 
           {/* White Card - Secure Care */}
-          <Card className="relative overflow-hidden bg-card-elevated border border-border p-8 group hover:scale-105 transition-transform">
+          <Card className="relative overflow-hidden bg-card-elevated border-2 border-border/50 p-8 group hover:scale-[1.02] hover:shadow-2xl hover:border-primary/30 transition-all duration-300">
             <div className="space-y-6">
               <div className="flex items-center justify-center">
-                <div className="relative h-32 w-32">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-muted via-foreground to-muted" />
+                <div className="relative h-36 w-36">
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 animate-pulse" />
+                  <div className="absolute inset-4 rounded-full bg-gradient-to-tr from-muted via-foreground/10 to-muted shadow-lg" />
                 </div>
               </div>
 
-              <div className="space-y-2 text-center">
-                <p className="text-lg font-semibold text-foreground">{t('secureData') || 'Secure Data'}</p>
-                <p className="text-2xl font-bold text-foreground">{t('privacyFirst') || 'Privacy First'}</p>
-                <p className="text-xs text-muted-foreground">{t('encryptedStorage') || 'End-to-End Encrypted Storage'}</p>
+              <div className="space-y-3 text-center">
+                <p className="text-lg font-bold text-primary">{t('secureData') || 'Secure Data'}</p>
+                <p className="text-3xl font-black text-foreground">{t('privacyFirst') || 'Privacy First'}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t('encryptedStorage') || 'End-to-end encrypted storage'}
+                </p>
               </div>
             </div>
 
-            <div className="absolute top-4 right-4">
-              <Sparkles className="h-8 w-8 text-muted-foreground" />
+            <div className="absolute top-6 right-6">
+              <Sparkles className="h-10 w-10 text-primary/40 group-hover:text-primary transition-colors" />
             </div>
           </Card>
         </div>
 
-        {/* Want to know more */}
-        <div className="mt-8 flex justify-end max-w-6xl mx-auto">
-          <button 
-            onClick={() => navigate("/auth")}
-            className="group flex flex-col items-end text-right hover:text-primary transition-colors"
-          >
-            <TrendingUp className="h-6 w-6 mb-2 text-muted-foreground group-hover:text-primary" />
-            <p className="text-xs text-muted-foreground group-hover:text-foreground">
-              {t('wantToKnowMore') || 'Want to know more'}<br />{t('aboutUs') || 'about us?'}
-            </p>
-          </button>
-        </div>
       </section>
 
       {/* CTA Section */}
-      <section className="container mx-auto px-6 py-16">
-        <Card className="max-w-4xl mx-auto p-8 md:p-12 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
-          <div className="text-center">
-            <h3 className="text-3xl md:text-4xl font-bold mb-4">
+      <section className="container mx-auto px-6 py-24">
+        <Card className="max-w-5xl mx-auto p-12 md:p-16 bg-gradient-to-br from-primary via-secondary to-accent border-0 shadow-2xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-white/10" />
+          <div className="relative text-center space-y-8">
+            <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
               {t('cta.title')}
             </h3>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto font-medium">
               {t('cta.description')}
             </p>
             <Button 
               size="lg" 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-10 rounded-full"
+              className="bg-white text-primary hover:bg-white/90 text-lg px-12 py-6 rounded-full font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all"
               onClick={() => navigate("/auth")}
             >
               {t('cta.button')}
