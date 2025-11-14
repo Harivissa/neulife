@@ -25,6 +25,7 @@ const Dashboard = () => {
   const [showCardRequest, setShowCardRequest] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [assessments, setAssessments] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -58,6 +59,7 @@ const Dashboard = () => {
     
     await fetchProfile(user.id);
     await fetchHealthCard(user.id);
+    await fetchAssessments(user.id);
   };
 
   const fetchProfile = async (userId: string) => {
@@ -77,6 +79,17 @@ const Dashboard = () => {
         locale: data.locale || "en-IN",
       });
     }
+  };
+
+  const fetchAssessments = async (userId: string) => {
+    const { data } = await supabase
+      .from("assessments" as any)
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    setAssessments(data || []);
   };
 
   const fetchHealthCard = async (userId: string) => {
@@ -260,6 +273,35 @@ const Dashboard = () => {
               </div>
             </div>
           </Card>
+
+          {/* Assessment History */}
+          {assessments.length > 0 && (
+            <Card className="p-6">
+              <h2 className="text-xl font-bold mb-4">Recent Assessments</h2>
+              <div className="space-y-3">
+                {assessments.map((assessment) => (
+                  <div
+                    key={assessment.id}
+                    className="p-4 border border-border/50 rounded-lg hover:bg-accent/5 transition-colors"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-sm font-medium">
+                        {new Date(assessment.created_at).toLocaleDateString()}
+                      </span>
+                      {assessment.triage_level && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+                          {assessment.triage_level}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {assessment.input_data?.symptoms || "No symptoms recorded"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
       </main>
 

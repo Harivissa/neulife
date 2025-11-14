@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Heart, Shield, Users, FileText, CheckCircle, XCircle } from "lucide-react";
+import { Heart, Shield, Users, FileText, CheckCircle, XCircle, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -19,8 +19,11 @@ const Admin = () => {
     totalUsers: 0,
     totalCards: 0,
     pendingCards: 0,
+    assessments: 0,
   });
   const [pendingCards, setPendingCards] = useState<any[]>([]);
+  const [allAssessments, setAllAssessments] = useState<any[]>([]);
+  const [showAssessments, setShowAssessments] = useState(false);
 
   useEffect(() => {
     checkAdmin();
@@ -75,10 +78,15 @@ const Admin = () => {
       .select("*", { count: "exact", head: true })
       .eq("status", "provisional");
 
+    const { count: assessmentCount } = await supabase
+      .from("assessments" as any)
+      .select("*", { count: "exact", head: true });
+
     setStats({
       totalUsers: userCount || 0,
       totalCards: cardCount || 0,
       pendingCards: pendingCount || 0,
+      assessments: assessmentCount || 0,
     });
   };
 
@@ -93,6 +101,19 @@ const Admin = () => {
       .order("created_at", { ascending: false });
 
     setPendingCards(data || []);
+  };
+
+  const fetchAllAssessments = async () => {
+    const { data } = await supabase
+      .from("assessments" as any)
+      .select(`
+        *,
+        profiles:user_id (name, email)
+      `)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    setAllAssessments(data || []);
   };
 
   const handleApprove = async (cardId: string) => {
@@ -168,7 +189,7 @@ const Admin = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-4 gap-6">
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -198,12 +219,42 @@ const Admin = () => {
                 <Shield className="h-10 w-10 text-accent opacity-20" />
               </div>
             </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Assessments</p>
+                  <p className="text-3xl font-bold">{stats.assessments}</p>
+                </div>
+                <Activity className="h-10 w-10 text-secondary opacity-20" />
+              </div>
+            </Card>
+          </div>
+
+          {/* Toggle Buttons */}
+          <div className="flex gap-4">
+            <Button
+              variant={!showAssessments ? "default" : "outline"}
+              onClick={() => setShowAssessments(false)}
+            >
+              Pending Verifications
+            </Button>
+            <Button
+              variant={showAssessments ? "default" : "outline"}
+              onClick={() => {
+                setShowAssessments(true);
+                fetchAllAssessments();
+              }}
+            >
+              All Assessments
+            </Button>
           </div>
 
           {/* Pending Verifications Table */}
-          <Card className="p-6">
-            <h3 className="text-xl font-bold mb-4">{t('pendingVerifications')}</h3>
-            <div className="overflow-x-auto">
+          {!showAssessments ? (
+            <Card className="p-6">
+              <h3 className="text-xl font-bold mb-4">{t('pendingVerifications')}</h3>
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -258,6 +309,48 @@ const Admin = () => {
               </Table>
             </div>
           </Card>
+          ) : (
+            <Card className="p-6">
+              <h2 className="text-2xl font-bold mb-6">All Assessments</h2>
+              {allAssessments.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No assessments found</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>User</TableHead>
+                        <TableHead>Symptoms</TableHead>
+                        <TableHead>Triage Level</TableHead>
+                        <TableHead>Confidence</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allAssessments.map((assessment) => (
+                        <TableRow key={assessment.id}>
+                          <TableCell>{new Date(assessment.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{assessment.profiles?.name}</p>
+                              <p className="text-sm text-muted-foreground">{assessment.profiles?.email}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate">{assessment.input_data?.symptoms || "N/A"}</TableCell>
+                          <TableCell>
+                            <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs">
+                              {assessment.triage_level || "unknown"}
+                            </span>
+                          </TableCell>
+                          <TableCell>{assessment.confidence || "N/A"}%</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </Card>
+          )}
         </div>
       </main>
     </div>

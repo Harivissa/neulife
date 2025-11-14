@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Play, Menu, TrendingUp, Code, Sparkles } from "lucide-react";
@@ -6,10 +7,34 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import AuthModal from "@/components/AuthModal";
 
 const Landing = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      navigate("/triage");
+    } else {
+      setShowAuthModal(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,7 +89,7 @@ const Landing = () => {
               <Button 
                 size="lg"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 shadow-lg hover:shadow-xl transition-all"
-                onClick={() => navigate("/triage")}
+                onClick={handleGetStarted}
               >
                 <Play className="h-5 w-5 mr-2 fill-current" />
                 {t('startTriage')}
@@ -73,7 +98,7 @@ const Landing = () => {
                 size="lg"
                 variant="outline"
                 className="rounded-full px-8 border-2"
-                onClick={() => navigate("/auth")}
+                onClick={() => navigate("/triage")}
               >
                 {t('learnMore')}
               </Button>
@@ -252,6 +277,12 @@ const Landing = () => {
         </div>
       </footer>
 
+      <AuthModal 
+        open={showAuthModal} 
+        onOpenChange={setShowAuthModal}
+        onSuccess={() => navigate("/triage")}
+      />
+      
       <VoiceAssistant />
     </div>
   );
