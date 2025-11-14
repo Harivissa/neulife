@@ -71,6 +71,31 @@ const Triage = () => {
 
       if (data?.triage) {
         setTriageResult(data.triage);
+        
+        // Save assessment to database if user is logged in
+        if (session?.user) {
+          const inputData = {
+            symptoms: formData.symptoms,
+            speciesType: formData.speciesType,
+            speciesSubtype: formData.speciesSubtype,
+            age: formData.age,
+            sex: formData.sex,
+            severity: formData.severity,
+            onset: formData.onset,
+          };
+
+          await supabase.from("assessments" as any).insert({
+            user_id: session.user.id,
+            hcid: hcid,
+            input_data: inputData,
+            ai_result: data,
+            easy_text: data.triage,
+            professional_text: data.triage,
+            triage_level: data.triage_level || "unknown",
+            confidence: data.confidence || 0,
+          });
+        }
+        
         toast.success("Triage completed");
       }
     } catch (error: any) {
