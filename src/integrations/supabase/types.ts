@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessments: {
+        Row: {
+          ai_result: Json
+          confidence: number | null
+          created_at: string | null
+          easy_text: string | null
+          hcid: string | null
+          id: string
+          input_data: Json
+          professional_text: string | null
+          triage_level: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_result: Json
+          confidence?: number | null
+          created_at?: string | null
+          easy_text?: string | null
+          hcid?: string | null
+          id?: string
+          input_data: Json
+          professional_text?: string | null
+          triage_level?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_result?: Json
+          confidence?: number | null
+          created_at?: string | null
+          easy_text?: string | null
+          hcid?: string | null
+          id?: string
+          input_data?: Json
+          professional_text?: string | null
+          triage_level?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_hcid_fkey"
+            columns: ["hcid"]
+            isOneToOne: false
+            referencedRelation: "health_cards"
+            referencedColumns: ["hcid"]
+          },
+          {
+            foreignKeyName: "assessments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consent_records: {
         Row: {
           consent_given: boolean
