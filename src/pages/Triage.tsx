@@ -13,6 +13,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useTranslation } from "react-i18next";
+import { BodyVisualization } from "@/components/BodyVisualization";
 
 const Triage = () => {
   const navigate = useNavigate();
@@ -144,20 +145,21 @@ const Triage = () => {
             </p>
           </div>
 
-          <Card className="p-6 border-border/50">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="symptoms">Describe Your Symptoms *</Label>
-                <Textarea
-                  id="symptoms"
-                  placeholder="Example: I have fever, body ache and red rash since yesterday..."
-                  value={formData.symptoms}
-                  onChange={(e) => setFormData({ ...formData, symptoms: e.target.value })}
-                  rows={6}
-                  required
-                  className="resize-none"
-                />
-              </div>
+          <div className="grid lg:grid-cols-2 gap-6">
+            <Card className="p-6 border-border/50">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="symptoms">Describe Your Symptoms *</Label>
+                  <Textarea
+                    id="symptoms"
+                    placeholder="Example: I have fever, body ache and red rash since yesterday..."
+                    value={formData.symptoms}
+                    onChange={(e) => setFormData({ ...formData, symptoms: e.target.value })}
+                    rows={6}
+                    required
+                    className="resize-none"
+                  />
+                </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -260,8 +262,11 @@ const Triage = () => {
                   "Get Triage Assessment"
                 )}
               </Button>
-            </form>
-          </Card>
+              </form>
+            </Card>
+
+            <BodyVisualization symptoms={formData.symptoms} />
+          </div>
 
           {triageResult && (
             <Card className="p-6 border-secondary/30 shadow-lg">
