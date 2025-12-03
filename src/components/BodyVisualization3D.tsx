@@ -1,5 +1,5 @@
-import { Canvas, useFrame, ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, Html } from "@react-three/drei";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import { useRef, useState, useMemo } from "react";
 import * as THREE from "three";
 import { Card } from "@/components/ui/card";
@@ -9,29 +9,48 @@ import { RotateCcw, Eye } from "lucide-react";
 interface BodyPart {
   name: string;
   position: [number, number, number];
-  size: [number, number, number];
+  scale: [number, number, number];
+  rotation?: [number, number, number];
   symptoms: string[];
-  color: string;
+  baseColor: string;
+  shape: "sphere" | "capsule" | "cylinder" | "box";
 }
 
 const bodyParts: BodyPart[] = [
-  { name: "Head", position: [0, 1.6, 0], size: [0.25, 0.3, 0.25], symptoms: ["headache", "dizziness", "migraine", "head pain"], color: "#8B5CF6" },
-  { name: "Neck", position: [0, 1.25, 0], size: [0.12, 0.15, 0.12], symptoms: ["neck pain", "stiff neck", "sore throat", "difficulty swallowing"], color: "#06B6D4" },
-  { name: "Chest", position: [0, 0.85, 0], size: [0.4, 0.35, 0.2], symptoms: ["chest pain", "difficulty breathing", "heart palpitations", "shortness of breath"], color: "#EF4444" },
-  { name: "Abdomen", position: [0, 0.4, 0], size: [0.35, 0.35, 0.18], symptoms: ["stomach pain", "nausea", "bloating", "abdominal cramps"], color: "#F59E0B" },
-  { name: "Lower Abdomen", position: [0, 0.05, 0], size: [0.3, 0.2, 0.15], symptoms: ["pelvic pain", "lower back pain", "urinary issues", "groin pain"], color: "#10B981" },
-  { name: "Left Shoulder", position: [-0.35, 1.05, 0], size: [0.15, 0.12, 0.12], symptoms: ["left shoulder pain", "shoulder stiffness", "arm weakness"], color: "#3B82F6" },
-  { name: "Right Shoulder", position: [0.35, 1.05, 0], size: [0.15, 0.12, 0.12], symptoms: ["right shoulder pain", "shoulder stiffness", "arm weakness"], color: "#3B82F6" },
-  { name: "Left Arm", position: [-0.45, 0.65, 0], size: [0.1, 0.4, 0.1], symptoms: ["left arm pain", "arm numbness", "elbow pain", "arm tingling"], color: "#6366F1" },
-  { name: "Right Arm", position: [0.45, 0.65, 0], size: [0.1, 0.4, 0.1], symptoms: ["right arm pain", "arm numbness", "elbow pain", "arm tingling"], color: "#6366F1" },
-  { name: "Left Hand", position: [-0.48, 0.25, 0], size: [0.08, 0.12, 0.05], symptoms: ["left hand pain", "finger numbness", "wrist pain", "hand swelling"], color: "#EC4899" },
-  { name: "Right Hand", position: [0.48, 0.25, 0], size: [0.08, 0.12, 0.05], symptoms: ["right hand pain", "finger numbness", "wrist pain", "hand swelling"], color: "#EC4899" },
-  { name: "Left Leg", position: [-0.15, -0.5, 0], size: [0.12, 0.55, 0.12], symptoms: ["left leg pain", "leg cramps", "knee pain", "thigh pain"], color: "#14B8A6" },
-  { name: "Right Leg", position: [0.15, -0.5, 0], size: [0.12, 0.55, 0.12], symptoms: ["right leg pain", "leg cramps", "knee pain", "thigh pain"], color: "#14B8A6" },
-  { name: "Left Foot", position: [-0.15, -0.95, 0.05], size: [0.08, 0.1, 0.15], symptoms: ["left foot pain", "ankle pain", "heel pain", "toe numbness"], color: "#F97316" },
-  { name: "Right Foot", position: [0.15, -0.95, 0.05], size: [0.08, 0.1, 0.15], symptoms: ["right foot pain", "ankle pain", "heel pain", "toe numbness"], color: "#F97316" },
-  { name: "Upper Back", position: [0, 0.85, -0.12], size: [0.38, 0.35, 0.08], symptoms: ["upper back pain", "spine pain", "shoulder blade pain"], color: "#8B5CF6" },
-  { name: "Lower Back", position: [0, 0.3, -0.1], size: [0.32, 0.3, 0.08], symptoms: ["lower back pain", "sciatica", "lumbar pain", "back stiffness"], color: "#DC2626" },
+  // Head
+  { name: "Head", position: [0, 1.65, 0], scale: [0.22, 0.28, 0.24], symptoms: ["headache", "dizziness", "migraine", "head pain", "vision problems"], baseColor: "#F8D9C4", shape: "sphere" },
+  
+  // Neck
+  { name: "Neck", position: [0, 1.32, 0], scale: [0.08, 0.12, 0.08], symptoms: ["neck pain", "stiff neck", "sore throat", "difficulty swallowing"], baseColor: "#F8D9C4", shape: "cylinder" },
+  
+  // Torso
+  { name: "Chest", position: [0, 1.0, 0], scale: [0.32, 0.28, 0.18], symptoms: ["chest pain", "difficulty breathing", "heart palpitations", "shortness of breath", "cough"], baseColor: "#F8D9C4", shape: "capsule" },
+  { name: "Abdomen", position: [0, 0.65, 0], scale: [0.28, 0.22, 0.16], symptoms: ["stomach pain", "nausea", "bloating", "abdominal cramps", "indigestion"], baseColor: "#F8D9C4", shape: "capsule" },
+  { name: "Pelvis", position: [0, 0.38, 0], scale: [0.3, 0.15, 0.16], symptoms: ["pelvic pain", "hip pain", "groin pain", "urinary issues"], baseColor: "#F8D9C4", shape: "capsule" },
+  
+  // Back
+  { name: "Upper Back", position: [0, 1.0, -0.1], scale: [0.3, 0.26, 0.1], symptoms: ["upper back pain", "spine pain", "shoulder blade pain", "posture pain"], baseColor: "#E8C9B4", shape: "box" },
+  { name: "Lower Back", position: [0, 0.55, -0.09], scale: [0.26, 0.22, 0.1], symptoms: ["lower back pain", "sciatica", "lumbar pain", "back stiffness"], baseColor: "#E8C9B4", shape: "box" },
+  
+  // Arms
+  { name: "Left Shoulder", position: [-0.38, 1.12, 0], scale: [0.1, 0.1, 0.1], symptoms: ["left shoulder pain", "shoulder stiffness", "rotator cuff pain"], baseColor: "#F8D9C4", shape: "sphere" },
+  { name: "Right Shoulder", position: [0.38, 1.12, 0], scale: [0.1, 0.1, 0.1], symptoms: ["right shoulder pain", "shoulder stiffness", "rotator cuff pain"], baseColor: "#F8D9C4", shape: "sphere" },
+  { name: "Left Upper Arm", position: [-0.45, 0.88, 0], scale: [0.07, 0.2, 0.07], symptoms: ["left arm pain", "bicep pain", "arm weakness"], baseColor: "#F8D9C4", shape: "capsule" },
+  { name: "Right Upper Arm", position: [0.45, 0.88, 0], scale: [0.07, 0.2, 0.07], symptoms: ["right arm pain", "bicep pain", "arm weakness"], baseColor: "#F8D9C4", shape: "capsule" },
+  { name: "Left Forearm", position: [-0.48, 0.55, 0], scale: [0.055, 0.18, 0.055], symptoms: ["left forearm pain", "elbow pain", "arm tingling"], baseColor: "#F8D9C4", shape: "capsule" },
+  { name: "Right Forearm", position: [0.48, 0.55, 0], scale: [0.055, 0.18, 0.055], symptoms: ["right forearm pain", "elbow pain", "arm tingling"], baseColor: "#F8D9C4", shape: "capsule" },
+  { name: "Left Hand", position: [-0.5, 0.3, 0], scale: [0.06, 0.1, 0.03], symptoms: ["left hand pain", "finger numbness", "wrist pain", "hand swelling", "carpal tunnel"], baseColor: "#F8D9C4", shape: "box" },
+  { name: "Right Hand", position: [0.5, 0.3, 0], scale: [0.06, 0.1, 0.03], symptoms: ["right hand pain", "finger numbness", "wrist pain", "hand swelling", "carpal tunnel"], baseColor: "#F8D9C4", shape: "box" },
+  
+  // Legs
+  { name: "Left Thigh", position: [-0.14, 0.08, 0], scale: [0.1, 0.28, 0.1], symptoms: ["left thigh pain", "quad pain", "hip pain"], baseColor: "#F8D9C4", shape: "capsule" },
+  { name: "Right Thigh", position: [0.14, 0.08, 0], scale: [0.1, 0.28, 0.1], symptoms: ["right thigh pain", "quad pain", "hip pain"], baseColor: "#F8D9C4", shape: "capsule" },
+  { name: "Left Knee", position: [-0.14, -0.22, 0], scale: [0.08, 0.08, 0.08], symptoms: ["left knee pain", "knee swelling", "knee stiffness"], baseColor: "#F8D9C4", shape: "sphere" },
+  { name: "Right Knee", position: [0.14, -0.22, 0], scale: [0.08, 0.08, 0.08], symptoms: ["right knee pain", "knee swelling", "knee stiffness"], baseColor: "#F8D9C4", shape: "sphere" },
+  { name: "Left Calf", position: [-0.14, -0.48, 0], scale: [0.065, 0.22, 0.065], symptoms: ["left calf pain", "leg cramps", "shin pain"], baseColor: "#F8D9C4", shape: "capsule" },
+  { name: "Right Calf", position: [0.14, -0.48, 0], scale: [0.065, 0.22, 0.065], symptoms: ["right calf pain", "leg cramps", "shin pain"], baseColor: "#F8D9C4", shape: "capsule" },
+  { name: "Left Foot", position: [-0.14, -0.78, 0.04], scale: [0.065, 0.05, 0.12], symptoms: ["left foot pain", "ankle pain", "heel pain", "plantar fasciitis"], baseColor: "#F8D9C4", shape: "box" },
+  { name: "Right Foot", position: [0.14, -0.78, 0.04], scale: [0.065, 0.05, 0.12], symptoms: ["right foot pain", "ankle pain", "heel pain", "plantar fasciitis"], baseColor: "#F8D9C4", shape: "box" },
 ];
 
 interface BodyPartMeshProps {
@@ -42,42 +61,114 @@ interface BodyPartMeshProps {
   onHover: (hovered: boolean) => void;
 }
 
+function CapsuleGeometry({ scale }: { scale: [number, number, number] }) {
+  const radius = Math.max(scale[0], scale[2]);
+  const height = scale[1] * 2;
+  return <capsuleGeometry args={[radius, height - radius * 2, 8, 16]} />;
+}
+
 function BodyPartMesh({ part, isHighlighted, isHovered, onClick, onHover }: BodyPartMeshProps) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
+  const pulseRef = useRef(0);
   
-  const color = useMemo(() => {
-    if (isHighlighted) return "#22C55E";
-    if (isHovered) return "#FBBF24";
-    return part.color;
-  }, [isHighlighted, isHovered, part.color]);
+  useFrame((state, delta) => {
+    if (isHighlighted && glowRef.current) {
+      pulseRef.current += delta * 3;
+      const pulse = Math.sin(pulseRef.current) * 0.5 + 0.5;
+      const material = glowRef.current.material as THREE.MeshBasicMaterial;
+      material.opacity = 0.3 + pulse * 0.4;
+      glowRef.current.scale.setScalar(1.15 + pulse * 0.15);
+    }
+  });
+
+  const highlightColor = "#22C55E";
+  const hoverColor = "#FBBF24";
+  const activeColor = isHighlighted ? highlightColor : isHovered ? hoverColor : part.baseColor;
+
+  const renderGeometry = () => {
+    switch (part.shape) {
+      case "sphere":
+        return <sphereGeometry args={[part.scale[0], 32, 32]} />;
+      case "capsule":
+        return <CapsuleGeometry scale={part.scale} />;
+      case "cylinder":
+        return <cylinderGeometry args={[part.scale[0], part.scale[0], part.scale[1] * 2, 16]} />;
+      case "box":
+      default:
+        return <boxGeometry args={[part.scale[0] * 2, part.scale[1] * 2, part.scale[2] * 2]} />;
+    }
+  };
+
+  const renderGlowGeometry = () => {
+    switch (part.shape) {
+      case "sphere":
+        return <sphereGeometry args={[part.scale[0] * 1.3, 32, 32]} />;
+      case "capsule":
+        return <CapsuleGeometry scale={[part.scale[0] * 1.3, part.scale[1] * 1.3, part.scale[2] * 1.3]} />;
+      case "cylinder":
+        return <cylinderGeometry args={[part.scale[0] * 1.3, part.scale[0] * 1.3, part.scale[1] * 2.6, 16]} />;
+      case "box":
+      default:
+        return <boxGeometry args={[part.scale[0] * 2.6, part.scale[1] * 2.6, part.scale[2] * 2.6]} />;
+    }
+  };
 
   return (
-    <mesh
-      ref={meshRef}
-      position={part.position}
-      onClick={(e: ThreeEvent<MouseEvent>) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      onPointerOver={(e: ThreeEvent<PointerEvent>) => {
-        e.stopPropagation();
-        onHover(true);
-        document.body.style.cursor = "pointer";
-      }}
-      onPointerOut={() => {
-        onHover(false);
-        document.body.style.cursor = "auto";
-      }}
-    >
-      <boxGeometry args={part.size} />
-      <meshStandardMaterial
-        color={color}
-        transparent
-        opacity={isHighlighted ? 0.9 : isHovered ? 0.8 : 0.6}
-        emissive={color}
-        emissiveIntensity={isHighlighted ? 0.3 : isHovered ? 0.2 : 0.1}
-      />
-    </mesh>
+    <group position={part.position} rotation={part.rotation || [0, 0, 0]}>
+      {/* Glow effect for highlighted parts */}
+      {isHighlighted && (
+        <mesh ref={glowRef}>
+          {renderGlowGeometry()}
+          <meshBasicMaterial
+            color={highlightColor}
+            transparent
+            opacity={0.4}
+            side={THREE.BackSide}
+          />
+        </mesh>
+      )}
+      
+      {/* Main body part mesh */}
+      <mesh
+        ref={meshRef}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          onHover(true);
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          onHover(false);
+          document.body.style.cursor = "auto";
+        }}
+      >
+        {renderGeometry()}
+        <meshStandardMaterial
+          color={activeColor}
+          roughness={0.6}
+          metalness={0.1}
+          emissive={isHighlighted ? highlightColor : isHovered ? hoverColor : "#000000"}
+          emissiveIntensity={isHighlighted ? 0.5 : isHovered ? 0.3 : 0}
+        />
+      </mesh>
+      
+      {/* Additional outer glow ring for highlighted */}
+      {isHighlighted && (
+        <mesh scale={[1.5, 1.5, 1.5]}>
+          {renderGlowGeometry()}
+          <meshBasicMaterial
+            color={highlightColor}
+            transparent
+            opacity={0.15}
+            side={THREE.BackSide}
+          />
+        </mesh>
+      )}
+    </group>
   );
 }
 
@@ -93,13 +184,17 @@ function HumanBody({ symptoms, onPartClick, hoveredPart, setHoveredPart }: Human
   const symptomsLower = symptoms.toLowerCase();
 
   const highlightedParts = useMemo(() => {
+    if (!symptomsLower.trim()) return [];
     return bodyParts.filter(part => 
-      part.symptoms.some(symptom => symptomsLower.includes(symptom.split(" ")[0]))
+      part.symptoms.some(symptom => {
+        const words = symptom.toLowerCase().split(" ");
+        return words.some(word => symptomsLower.includes(word) && word.length > 3);
+      })
     ).map(part => part.name);
   }, [symptomsLower]);
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} position={[0, 0.3, 0]}>
       {bodyParts.map((part) => (
         <BodyPartMesh
           key={part.name}
@@ -148,6 +243,8 @@ export function BodyVisualization3D({ symptoms, onSymptomSelect }: BodyVisualiza
     }
   };
 
+  const hoveredPartData = bodyParts.find(p => p.name === hoveredPart);
+
   return (
     <Card className="p-4 border-border/50 h-full min-h-[500px] flex flex-col">
       <div className="flex items-center justify-between mb-3">
@@ -174,12 +271,16 @@ export function BodyVisualization3D({ symptoms, onSymptomSelect }: BodyVisualiza
         </Button>
       </div>
 
-      <div className="flex-1 rounded-lg overflow-hidden bg-gradient-to-b from-card to-background relative">
-        <Canvas camera={{ position: [0, 0.5, 3], fov: 50 }}>
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[5, 5, 5]} intensity={1} />
-          <directionalLight position={[-5, 5, -5]} intensity={0.5} />
-          <pointLight position={[0, 3, 0]} intensity={0.3} />
+      <div className="flex-1 rounded-lg overflow-hidden bg-gradient-to-b from-slate-900/50 to-slate-800/50 relative border border-border/30">
+        <Canvas camera={{ position: [0, 0.5, 3], fov: 45 }}>
+          <color attach="background" args={["#0f172a"]} />
+          <fog attach="fog" args={["#0f172a", 4, 10]} />
+          
+          <ambientLight intensity={0.4} />
+          <directionalLight position={[5, 5, 5]} intensity={0.8} color="#ffffff" />
+          <directionalLight position={[-5, 3, -5]} intensity={0.4} color="#60a5fa" />
+          <pointLight position={[0, 3, 2]} intensity={0.5} color="#22c55e" />
+          <pointLight position={[0, -1, 2]} intensity={0.3} color="#fbbf24" />
           
           <HumanBody
             symptoms={symptoms}
@@ -192,22 +293,26 @@ export function BodyVisualization3D({ symptoms, onSymptomSelect }: BodyVisualiza
             ref={controlsRef}
             enablePan={false}
             enableZoom={true}
-            minDistance={2}
-            maxDistance={6}
+            minDistance={1.5}
+            maxDistance={5}
             target={[0, 0.3, 0]}
+            autoRotate={false}
           />
         </Canvas>
         
-        {hoveredPart && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-2 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg">
-            <p className="text-sm font-medium text-foreground">{hoveredPart}</p>
-            <p className="text-xs text-muted-foreground">Click to add symptoms</p>
+        {hoveredPart && hoveredPartData && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-3 bg-card/95 backdrop-blur-md rounded-xl border border-border shadow-xl max-w-xs">
+            <p className="text-sm font-semibold text-foreground mb-1">{hoveredPart}</p>
+            <p className="text-xs text-muted-foreground">
+              {hoveredPartData.symptoms.slice(0, 3).join(" • ")}
+            </p>
+            <p className="text-xs text-primary mt-1">Click to add symptoms</p>
           </div>
         )}
       </div>
 
       <p className="text-xs text-muted-foreground mt-3 text-center">
-        Drag to rotate • Scroll to zoom • Click body parts to add symptoms
+        🖱️ Drag to rotate • 📜 Scroll to zoom • 👆 Click body parts to add symptoms
       </p>
     </Card>
   );
