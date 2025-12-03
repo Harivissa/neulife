@@ -13,7 +13,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useTranslation } from "react-i18next";
-import { BodyVisualization } from "@/components/BodyVisualization";
+import { BodyVisualization3D } from "@/components/BodyVisualization3D";
 
 const Triage = () => {
   const navigate = useNavigate();
@@ -265,7 +265,16 @@ const Triage = () => {
               </form>
             </Card>
 
-            <BodyVisualization symptoms={formData.symptoms} />
+            <BodyVisualization3D 
+              symptoms={formData.symptoms} 
+              onSymptomSelect={(symptom) => {
+                const currentSymptoms = formData.symptoms.trim();
+                const newSymptoms = currentSymptoms 
+                  ? `${currentSymptoms}, ${symptom}` 
+                  : symptom;
+                setFormData({ ...formData, symptoms: newSymptoms });
+              }}
+            />
           </div>
 
           {triageResult && (
