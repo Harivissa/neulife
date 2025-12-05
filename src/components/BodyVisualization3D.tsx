@@ -4,9 +4,9 @@ import { useRef, useState, useMemo } from "react";
 import * as THREE from "three";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Eye, Layers } from "lucide-react";
+import { RotateCcw, Eye, Layers, Heart } from "lucide-react";
 
-type BodyLayer = "skin" | "muscle" | "skeleton";
+type BodyLayer = "skin" | "muscle" | "skeleton" | "organs";
 
 interface BodyPart {
   name: string;
@@ -15,9 +15,85 @@ interface BodyPart {
   scale: [number, number, number];
   rotation?: [number, number, number];
   symptoms: string[];
-  colors: Record<BodyLayer, string>;
+  colors: Record<Exclude<BodyLayer, "organs">, string>;
   shape: "sphere" | "capsule" | "cylinder" | "box";
 }
+
+interface Organ {
+  name: string;
+  position: [number, number, number];
+  scale: [number, number, number];
+  color: string;
+  symptoms: string[];
+  shape: "sphere" | "capsule" | "box" | "kidney";
+}
+
+const organs: Organ[] = [
+  {
+    name: "Heart",
+    position: [-0.06, 1.05, 0.05],
+    scale: [0.08, 0.1, 0.06],
+    color: "#DC2626",
+    symptoms: ["heart palpitations", "chest pain", "irregular heartbeat", "heart racing", "cardiac pain"],
+    shape: "sphere",
+  },
+  {
+    name: "Left Lung",
+    position: [-0.15, 1.0, 0],
+    scale: [0.1, 0.18, 0.08],
+    color: "#F472B6",
+    symptoms: ["difficulty breathing", "shortness of breath", "lung pain", "cough", "wheezing"],
+    shape: "capsule",
+  },
+  {
+    name: "Right Lung",
+    position: [0.15, 1.0, 0],
+    scale: [0.12, 0.2, 0.1],
+    color: "#F472B6",
+    symptoms: ["difficulty breathing", "shortness of breath", "lung pain", "cough", "wheezing"],
+    shape: "capsule",
+  },
+  {
+    name: "Liver",
+    position: [0.12, 0.72, 0.03],
+    scale: [0.14, 0.1, 0.08],
+    color: "#92400E",
+    symptoms: ["liver pain", "jaundice", "abdominal pain right side", "nausea", "fatigue"],
+    shape: "box",
+  },
+  {
+    name: "Stomach",
+    position: [-0.08, 0.7, 0.04],
+    scale: [0.1, 0.08, 0.06],
+    color: "#FCD34D",
+    symptoms: ["stomach pain", "nausea", "indigestion", "bloating", "acid reflux"],
+    shape: "kidney",
+  },
+  {
+    name: "Left Kidney",
+    position: [-0.12, 0.6, -0.05],
+    scale: [0.05, 0.08, 0.04],
+    color: "#7C3AED",
+    symptoms: ["kidney pain", "back pain", "urinary issues", "kidney stones"],
+    shape: "kidney",
+  },
+  {
+    name: "Right Kidney",
+    position: [0.12, 0.58, -0.05],
+    scale: [0.05, 0.08, 0.04],
+    color: "#7C3AED",
+    symptoms: ["kidney pain", "back pain", "urinary issues", "kidney stones"],
+    shape: "kidney",
+  },
+  {
+    name: "Intestines",
+    position: [0, 0.5, 0.02],
+    scale: [0.18, 0.12, 0.08],
+    color: "#FB923C",
+    symptoms: ["abdominal cramps", "digestive issues", "constipation", "diarrhea", "bloating"],
+    shape: "capsule",
+  },
+];
 
 const bodyParts: BodyPart[] = [
   // Head
@@ -240,13 +316,17 @@ const bodyParts: BodyPart[] = [
   },
 ];
 
+// Heart-related keywords for heartbeat animation
+const heartKeywords = ["heart", "cardiac", "chest pain", "palpitation", "heartbeat", "racing heart"];
+
 interface BodyPartMeshProps {
   part: BodyPart;
-  layer: BodyLayer;
+  layer: Exclude<BodyLayer, "organs">;
   isHighlighted: boolean;
   isHovered: boolean;
   onClick: () => void;
   onHover: (hovered: boolean) => void;
+  hasHeartSymptom?: boolean;
 }
 
 function CapsuleGeometry({ scale }: { scale: [number, number, number] }) {
@@ -255,7 +335,33 @@ function CapsuleGeometry({ scale }: { scale: [number, number, number] }) {
   return <capsuleGeometry args={[radius, height - radius * 2, 8, 16]} />;
 }
 
-function BodyPartMesh({ part, layer, isHighlighted, isHovered, onClick, onHover }: BodyPartMeshProps) {
+// Heartbeat animation component for chest area
+function HeartbeatPulse({ position, active }: { position: [number, number, number]; active: boolean }) {
+  const pulseRef = useRef<THREE.Mesh>(null);
+  const timeRef = useRef(0);
+
+  useFrame((state, delta) => {
+    if (active && pulseRef.current) {
+      timeRef.current += delta * 4; // heartbeat speed
+      // Simulate heartbeat: quick expand, quick contract, pause
+      const beat = Math.sin(timeRef.current) > 0.7 ? 1.2 : 1;
+      pulseRef.current.scale.setScalar(beat);
+      const material = pulseRef.current.material as THREE.MeshBasicMaterial;
+      material.opacity = beat > 1 ? 0.6 : 0.2;
+    }
+  });
+
+  if (!active) return null;
+
+  return (
+    <mesh ref={pulseRef} position={[position[0] - 0.06, position[1] + 0.05, position[2] + 0.1]}>
+      <sphereGeometry args={[0.15, 32, 32]} />
+      <meshBasicMaterial color="#DC2626" transparent opacity={0.3} />
+    </mesh>
+  );
+}
+
+function BodyPartMesh({ part, layer, isHighlighted, isHovered, onClick, onHover, hasHeartSymptom }: BodyPartMeshProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const pulseRef = useRef(0);
@@ -274,6 +380,7 @@ function BodyPartMesh({ part, layer, isHighlighted, isHovered, onClick, onHover 
   const hoverColor = "#FBBF24";
   const baseColor = part.colors[layer];
   const activeColor = isHighlighted ? highlightColor : isHovered ? hoverColor : baseColor;
+  const isChest = part.name === "Chest";
 
   const materialProps = useMemo(() => {
     switch (layer) {
@@ -385,6 +492,119 @@ function BodyPartMesh({ part, layer, isHighlighted, isHovered, onClick, onHover 
           />
         </mesh>
       )}
+      
+      {/* Heartbeat pulse for chest area */}
+      {isChest && <HeartbeatPulse position={[0, 0, 0]} active={!!hasHeartSymptom} />}
+    </group>
+  );
+}
+
+// Organ mesh component
+interface OrganMeshProps {
+  organ: Organ;
+  isHovered: boolean;
+  isHighlighted: boolean;
+  isHeartBeating: boolean;
+  onClick: () => void;
+  onHover: (hovered: boolean) => void;
+}
+
+function OrganMesh({ organ, isHovered, isHighlighted, isHeartBeating, onClick, onHover }: OrganMeshProps) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const pulseRef = useRef(0);
+  const isHeart = organ.name === "Heart";
+
+  useFrame((state, delta) => {
+    if (!meshRef.current) return;
+    
+    // Heartbeat animation
+    if (isHeart && isHeartBeating) {
+      pulseRef.current += delta * 6;
+      const beat = Math.sin(pulseRef.current);
+      const scale = beat > 0.7 ? 1.25 : 1;
+      meshRef.current.scale.setScalar(scale);
+    } else if (isHeart) {
+      // Subtle idle heartbeat
+      pulseRef.current += delta * 1.2;
+      const idleBeat = Math.sin(pulseRef.current) * 0.05 + 1;
+      meshRef.current.scale.setScalar(idleBeat);
+    }
+  });
+
+  const highlightColor = "#22C55E";
+  const hoverColor = "#FBBF24";
+  const activeColor = isHighlighted ? highlightColor : isHovered ? hoverColor : organ.color;
+
+  const renderGeometry = () => {
+    switch (organ.shape) {
+      case "sphere":
+        return <sphereGeometry args={[organ.scale[0], 32, 32]} />;
+      case "capsule":
+        return <CapsuleGeometry scale={organ.scale} />;
+      case "kidney":
+        return <sphereGeometry args={[organ.scale[0], 16, 16]} />;
+      case "box":
+      default:
+        return <boxGeometry args={[organ.scale[0] * 2, organ.scale[1] * 2, organ.scale[2] * 2]} />;
+    }
+  };
+
+  return (
+    <group position={organ.position}>
+      {isHovered && (
+        <Html
+          position={[0, organ.scale[1] + 0.1, 0]}
+          center
+          distanceFactor={3}
+          style={{ pointerEvents: 'none' }}
+        >
+          <div className="px-2 py-1 bg-card/95 backdrop-blur-sm rounded-md border border-primary/50 shadow-lg whitespace-nowrap animate-fade-in">
+            <p className="text-xs font-bold text-primary">{organ.name}</p>
+            <p className="text-[10px] text-muted-foreground">{organ.symptoms[0]}</p>
+          </div>
+        </Html>
+      )}
+      
+      {/* Glow for highlighted organs */}
+      {(isHighlighted || (isHeart && isHeartBeating)) && (
+        <mesh scale={[1.4, 1.4, 1.4]}>
+          {renderGeometry()}
+          <meshBasicMaterial
+            color={isHeart && isHeartBeating ? "#DC2626" : highlightColor}
+            transparent
+            opacity={0.4}
+            side={THREE.BackSide}
+          />
+        </mesh>
+      )}
+      
+      <mesh
+        ref={meshRef}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          onHover(true);
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          onHover(false);
+          document.body.style.cursor = "auto";
+        }}
+      >
+        {renderGeometry()}
+        <meshStandardMaterial
+          color={activeColor}
+          roughness={0.4}
+          metalness={0.2}
+          emissive={isHighlighted ? highlightColor : isHeart && isHeartBeating ? "#DC2626" : isHovered ? hoverColor : "#000000"}
+          emissiveIntensity={isHighlighted ? 0.5 : isHeart && isHeartBeating ? 0.8 : isHovered ? 0.3 : 0}
+          transparent
+          opacity={0.9}
+        />
+      </mesh>
     </group>
   );
 }
@@ -401,6 +621,10 @@ function HumanBody({ symptoms, layer, onPartClick, hoveredPart, setHoveredPart }
   const groupRef = useRef<THREE.Group>(null);
   const symptomsLower = symptoms.toLowerCase();
 
+  const hasHeartSymptom = useMemo(() => {
+    return heartKeywords.some(keyword => symptomsLower.includes(keyword));
+  }, [symptomsLower]);
+
   const highlightedParts = useMemo(() => {
     if (!symptomsLower.trim()) return [];
     return bodyParts.filter(part => 
@@ -411,6 +635,40 @@ function HumanBody({ symptoms, layer, onPartClick, hoveredPart, setHoveredPart }
     ).map(part => part.name);
   }, [symptomsLower]);
 
+  const highlightedOrgans = useMemo(() => {
+    if (!symptomsLower.trim()) return [];
+    return organs.filter(organ => 
+      organ.symptoms.some(symptom => {
+        const words = symptom.toLowerCase().split(" ");
+        return words.some(word => symptomsLower.includes(word) && word.length > 3);
+      })
+    ).map(organ => organ.name);
+  }, [symptomsLower]);
+
+  if (layer === "organs") {
+    return (
+      <group ref={groupRef} position={[0, 0.3, 0]}>
+        {/* Semi-transparent body outline */}
+        <mesh position={[0, 0.85, 0]}>
+          <capsuleGeometry args={[0.25, 0.9, 8, 16]} />
+          <meshStandardMaterial color="#3B82F6" transparent opacity={0.15} roughness={0.8} />
+        </mesh>
+        
+        {organs.map((organ) => (
+          <OrganMesh
+            key={organ.name}
+            organ={organ}
+            isHovered={hoveredPart === organ.name}
+            isHighlighted={highlightedOrgans.includes(organ.name)}
+            isHeartBeating={hasHeartSymptom}
+            onClick={() => onPartClick(organ.symptoms)}
+            onHover={(hovered) => setHoveredPart(hovered ? organ.name : null)}
+          />
+        ))}
+      </group>
+    );
+  }
+
   return (
     <group ref={groupRef} position={[0, 0.3, 0]}>
       {bodyParts.map((part) => (
@@ -420,6 +678,7 @@ function HumanBody({ symptoms, layer, onPartClick, hoveredPart, setHoveredPart }
           layer={layer}
           isHighlighted={highlightedParts.includes(part.name)}
           isHovered={hoveredPart === part.name}
+          hasHeartSymptom={hasHeartSymptom}
           onClick={() => onPartClick(part.symptoms)}
           onHover={(hovered) => setHoveredPart(hovered ? part.name : null)}
         />
@@ -437,6 +696,7 @@ const layerConfig: Record<BodyLayer, { label: string; icon: string; bgColor: str
   skin: { label: "Skin", icon: "👤", bgColor: "from-amber-900/30 to-orange-900/30" },
   muscle: { label: "Muscle", icon: "💪", bgColor: "from-red-900/40 to-rose-900/40" },
   skeleton: { label: "Skeleton", icon: "🦴", bgColor: "from-slate-800/50 to-gray-900/50" },
+  organs: { label: "Organs", icon: "🫀", bgColor: "from-indigo-900/40 to-purple-900/40" },
 };
 
 export function BodyVisualization3D({ symptoms, onSymptomSelect }: BodyVisualization3DProps) {
@@ -470,12 +730,15 @@ export function BodyVisualization3D({ symptoms, onSymptomSelect }: BodyVisualiza
   };
 
   const cycleLayer = () => {
-    const layers: BodyLayer[] = ["skin", "muscle", "skeleton"];
+    const layers: BodyLayer[] = ["skin", "muscle", "skeleton", "organs"];
     const currentIndex = layers.indexOf(layer);
     setLayer(layers[(currentIndex + 1) % layers.length]);
   };
 
-  const hoveredPartData = bodyParts.find(p => p.name === hoveredPart);
+  const hoveredPartData = layer === "organs" 
+    ? organs.find(o => o.name === hoveredPart) 
+    : bodyParts.find(p => p.name === hoveredPart);
+  const hoveredOrganData = organs.find(o => o.name === hoveredPart);
   const currentLayerConfig = layerConfig[layer];
 
   return (
@@ -516,13 +779,13 @@ export function BodyVisualization3D({ symptoms, onSymptomSelect }: BodyVisualiza
 
       <div className={`flex-1 rounded-lg overflow-hidden bg-gradient-to-b ${currentLayerConfig.bgColor} relative border border-border/30 transition-colors duration-500`}>
         <Canvas camera={{ position: [0, 0.5, 3], fov: 45 }}>
-          <color attach="background" args={[layer === "skeleton" ? "#1a1a2e" : layer === "muscle" ? "#1f1015" : "#0f172a"]} />
-          <fog attach="fog" args={[layer === "skeleton" ? "#1a1a2e" : layer === "muscle" ? "#1f1015" : "#0f172a", 4, 10]} />
+          <color attach="background" args={[layer === "skeleton" ? "#1a1a2e" : layer === "muscle" ? "#1f1015" : layer === "organs" ? "#0f0f2a" : "#0f172a"]} />
+          <fog attach="fog" args={[layer === "skeleton" ? "#1a1a2e" : layer === "muscle" ? "#1f1015" : layer === "organs" ? "#0f0f2a" : "#0f172a", 4, 10]} />
           
-          <ambientLight intensity={layer === "skeleton" ? 0.6 : 0.4} />
+          <ambientLight intensity={layer === "skeleton" ? 0.6 : layer === "organs" ? 0.5 : 0.4} />
           <directionalLight position={[5, 5, 5]} intensity={0.8} color="#ffffff" />
-          <directionalLight position={[-5, 3, -5]} intensity={0.4} color={layer === "muscle" ? "#ff6b6b" : "#60a5fa"} />
-          <pointLight position={[0, 3, 2]} intensity={0.5} color="#22c55e" />
+          <directionalLight position={[-5, 3, -5]} intensity={0.4} color={layer === "muscle" ? "#ff6b6b" : layer === "organs" ? "#a855f7" : "#60a5fa"} />
+          <pointLight position={[0, 3, 2]} intensity={0.5} color={layer === "organs" ? "#dc2626" : "#22c55e"} />
           <pointLight position={[0, -1, 2]} intensity={0.3} color="#fbbf24" />
           
           <HumanBody
@@ -544,12 +807,14 @@ export function BodyVisualization3D({ symptoms, onSymptomSelect }: BodyVisualiza
           />
         </Canvas>
         
-        {hoveredPart && hoveredPartData && (
+        {hoveredPart && (hoveredPartData || hoveredOrganData) && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-3 bg-card/95 backdrop-blur-md rounded-xl border border-border shadow-xl max-w-xs">
             <p className="text-sm font-semibold text-foreground mb-0.5">{hoveredPart}</p>
-            <p className="text-xs font-medium text-primary mb-1">{hoveredPartData.anatomicalName}</p>
+            {layer !== "organs" && hoveredPartData && 'anatomicalName' in hoveredPartData && (
+              <p className="text-xs font-medium text-primary mb-1">{hoveredPartData.anatomicalName}</p>
+            )}
             <p className="text-xs text-muted-foreground">
-              {hoveredPartData.symptoms.slice(0, 3).join(" • ")}
+              {(hoveredPartData || hoveredOrganData)?.symptoms.slice(0, 3).join(" • ")}
             </p>
             <p className="text-xs text-secondary mt-1.5">Click to add symptoms</p>
           </div>
