@@ -291,6 +291,7 @@ const Triage = () => {
                       toast.success(`Added: ${regionData.regionLabel}`);
                     }}
                     initialGender={formData.sex === 'female' ? 'female' : 'male'}
+                    symptoms={formData.symptoms}
                   />
                 </TabsContent>
                 
