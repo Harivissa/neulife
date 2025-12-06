@@ -5,7 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Heart, Activity, AlertTriangle, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Heart, Activity, AlertTriangle, Loader2, Box, Layout } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -14,7 +15,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useTranslation } from "react-i18next";
 import { BodyVisualization3D } from "@/components/BodyVisualization3D";
-
+import { InteractiveBodyMap, RegionData } from "@/components/InteractiveBodyMap";
 const Triage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -265,16 +266,48 @@ const Triage = () => {
               </form>
             </Card>
 
-            <BodyVisualization3D 
-              symptoms={formData.symptoms} 
-              onSymptomSelect={(symptom) => {
-                const currentSymptoms = formData.symptoms.trim();
-                const newSymptoms = currentSymptoms 
-                  ? `${currentSymptoms}, ${symptom}` 
-                  : symptom;
-                setFormData({ ...formData, symptoms: newSymptoms });
-              }}
-            />
+            <div className="space-y-4">
+              <Tabs defaultValue="2d" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="2d" className="flex items-center gap-2">
+                    <Layout className="w-4 h-4" />
+                    2D Body Map
+                  </TabsTrigger>
+                  <TabsTrigger value="3d" className="flex items-center gap-2">
+                    <Box className="w-4 h-4" />
+                    3D Visualization
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="2d" className="mt-0">
+                  <InteractiveBodyMap
+                    onRegionSelect={(regionData: RegionData) => {
+                      const symptomText = `Pain/discomfort in ${regionData.regionLabel} (${regionData.layer} layer)`;
+                      const currentSymptoms = formData.symptoms.trim();
+                      const newSymptoms = currentSymptoms 
+                        ? `${currentSymptoms}, ${symptomText}` 
+                        : symptomText;
+                      setFormData({ ...formData, symptoms: newSymptoms });
+                      toast.success(`Added: ${regionData.regionLabel}`);
+                    }}
+                    initialGender={formData.sex === 'female' ? 'female' : 'male'}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="3d" className="mt-0">
+                  <BodyVisualization3D 
+                    symptoms={formData.symptoms} 
+                    onSymptomSelect={(symptom) => {
+                      const currentSymptoms = formData.symptoms.trim();
+                      const newSymptoms = currentSymptoms 
+                        ? `${currentSymptoms}, ${symptom}` 
+                        : symptom;
+                      setFormData({ ...formData, symptoms: newSymptoms });
+                    }}
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
 
           {triageResult && (
