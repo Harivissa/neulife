@@ -1,5 +1,5 @@
 export type Gender = 'male' | 'female';
-export type BodyLayer = 'skin' | 'muscles' | 'skeleton' | 'organs' | 'nervous';
+export type BodyLayer = 'skin' | 'muscles' | 'skeleton' | 'organs' | 'nervous' | 'respiratory';
 export type BodyView = 'front' | 'back' | 'left' | 'right';
 
 export interface RegionData {
@@ -27,4 +27,5 @@ export interface InteractiveBodyMapProps {
   initialLayer?: BodyLayer;
   initialView?: BodyView;
   className?: string;
+  symptoms?: string;
 }
