@@ -89,10 +89,10 @@ const Landing = () => {
               <Button 
                 size="lg"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 shadow-lg hover:shadow-xl transition-all"
-                onClick={handleGetStarted}
+                onClick={() => navigate("/app")}
               >
                 <Play className="h-5 w-5 mr-2 fill-current" />
-                {t('startTriage')}
+                Launch NEULIFE
               </Button>
               <Button 
                 size="lg"
@@ -100,7 +100,7 @@ const Landing = () => {
                 className="rounded-full px-8 border-2"
                 onClick={() => navigate("/triage")}
               >
-                {t('learnMore')}
+                Quick Triage
               </Button>
             </div>
           </div>
