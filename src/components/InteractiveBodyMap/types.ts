@@ -1,5 +1,5 @@
 export type Gender = 'male' | 'female';
-export type BodyLayer = 'skin' | 'muscles' | 'skeleton' | 'organs' | 'nervous' | 'respiratory';
+export type BodyLayer = 'skin' | 'muscles' | 'skeleton' | 'organs' | 'nervous' | 'respiratory' | 'circulatory';
 export type BodyView = 'front' | 'back' | 'left' | 'right';
 
 export interface RegionData {
@@ -9,6 +9,11 @@ export interface RegionData {
   region: string;
   regionLabel: string;
   severity?: number;
+}
+
+export interface SymptomHistoryEntry extends RegionData {
+  id: string;
+  timestamp: Date;
 }
 
 export interface BodyRegion {
@@ -23,6 +28,7 @@ export interface BodyRegion {
 
 export interface InteractiveBodyMapProps {
   onRegionSelect?: (regionData: RegionData) => void;
+  onSymptomHistoryChange?: (history: SymptomHistoryEntry[]) => void;
   initialGender?: Gender;
   initialLayer?: BodyLayer;
   initialView?: BodyView;

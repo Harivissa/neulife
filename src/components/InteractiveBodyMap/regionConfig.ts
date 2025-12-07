@@ -406,6 +406,12 @@ export const layerStyles: Record<BodyLayer, { fill: string; stroke: string; hove
     hoverFill: 'hsl(200 75% 60% / 0.7)',
     activeFill: 'hsl(200 80% 55% / 0.8)',
   },
+  circulatory: {
+    fill: 'hsl(0 80% 50% / 0.5)',
+    stroke: 'hsl(0 85% 40%)',
+    hoverFill: 'hsl(0 85% 55% / 0.7)',
+    activeFill: 'hsl(0 90% 50% / 0.8)',
+  },
 };
 
 // Get filtered regions based on current state

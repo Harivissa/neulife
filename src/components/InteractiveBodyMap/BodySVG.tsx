@@ -24,6 +24,7 @@ export const BodySVG: React.FC<BodySVGProps> = ({
 }) => {
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [breathPhase, setBreathPhase] = useState(0);
+  const [bloodFlowPhase, setBloodFlowPhase] = useState(0);
   const regions = getFilteredRegions(gender, layer, view);
   const styles = layerStyles[layer];
 
@@ -36,6 +37,16 @@ export const BodySVG: React.FC<BodySVGProps> = ({
       return () => clearInterval(interval);
     }
   }, [layer, hasLungSymptoms]);
+
+  // Blood flow animation for circulatory system
+  useEffect(() => {
+    if (layer === 'circulatory') {
+      const interval = setInterval(() => {
+        setBloodFlowPhase((prev) => (prev + 1) % 100);
+      }, 30);
+      return () => clearInterval(interval);
+    }
+  }, [layer]);
 
   // Calculate breathing scale (sine wave for smooth breathing)
   const breathScale = 1 + Math.sin((breathPhase / 100) * Math.PI * 2) * 0.08;
@@ -381,6 +392,191 @@ export const BodySVG: React.FC<BodySVGProps> = ({
     );
   };
 
+  // Render circulatory system with blood flow animation
+  const renderCirculatorySystem = () => {
+    if (layer !== 'circulatory') return null;
+    
+    const progress = bloodFlowPhase / 100;
+    
+    // Artery paths (red - oxygenated blood from heart)
+    const arteryPaths = [
+      // Aorta
+      { d: 'M150,180 L150,160 Q150,145 160,145 L180,145', type: 'main' },
+      { d: 'M150,180 L150,200 L150,250 L150,300', type: 'main' },
+      // Carotid arteries (to head)
+      { d: 'M160,145 Q165,130 160,115 L160,80', type: 'branch' },
+      { d: 'M150,145 Q135,130 140,115 L140,80', type: 'branch' },
+      // Subclavian arteries (to arms)
+      { d: 'M180,145 Q200,140 210,160 L225,230 L235,300', type: 'branch' },
+      { d: 'M150,145 Q100,140 90,160 L75,230 L65,300', type: 'branch' },
+      // Iliac arteries (to legs)
+      { d: 'M150,300 Q145,310 130,320 L120,400 L115,500', type: 'branch' },
+      { d: 'M150,300 Q155,310 170,320 L180,400 L185,500', type: 'branch' },
+    ];
+    
+    // Vein paths (blue - deoxygenated blood to heart)
+    const veinPaths = [
+      // Vena cava
+      { d: 'M140,180 L140,160 Q140,145 130,145 L110,145', type: 'main' },
+      { d: 'M140,180 L140,200 L140,250 L140,300', type: 'main' },
+      // Jugular veins (from head)
+      { d: 'M130,145 Q125,130 130,115 L130,80', type: 'branch' },
+      { d: 'M145,145 Q150,130 145,115 L145,80', type: 'branch' },
+      // From arms
+      { d: 'M110,145 Q85,140 75,160 L60,230 L50,300', type: 'branch' },
+      { d: 'M140,145 Q215,140 225,160 L240,230 L250,300', type: 'branch' },
+      // From legs
+      { d: 'M140,300 Q135,310 120,320 L110,400 L105,500', type: 'branch' },
+      { d: 'M140,300 Q145,310 160,320 L170,400 L175,500', type: 'branch' },
+    ];
+
+    return (
+      <g className="circulatory-system">
+        {/* Heart - central pump */}
+        <g className="heart">
+          <path
+            d="M130,165 C115,155 115,175 130,190 L150,210 L170,190 C185,175 185,155 170,165 C160,155 140,155 130,165"
+            fill="hsl(0 70% 45%)"
+            stroke="hsl(0 80% 35%)"
+            strokeWidth="2"
+          >
+            <animate
+              attributeName="transform"
+              values="scale(1);scale(1.05);scale(1)"
+              dur="0.8s"
+              repeatCount="indefinite"
+              keyTimes="0;0.15;1"
+            />
+          </path>
+          {/* Atria */}
+          <ellipse cx="140" cy="162" rx="12" ry="8" fill="hsl(0 60% 55%)" opacity="0.8" />
+          <ellipse cx="160" cy="162" rx="12" ry="8" fill="hsl(0 60% 55%)" opacity="0.8" />
+        </g>
+
+        {/* Arteries (oxygenated - red) */}
+        <g className="arteries">
+          {arteryPaths.map((path, i) => (
+            <path
+              key={`artery-${i}`}
+              d={path.d}
+              fill="none"
+              stroke="hsl(0 80% 50%)"
+              strokeWidth={path.type === 'main' ? 4 : 2.5}
+              strokeLinecap="round"
+              opacity={0.8}
+            />
+          ))}
+        </g>
+
+        {/* Veins (deoxygenated - blue) */}
+        <g className="veins">
+          {veinPaths.map((path, i) => (
+            <path
+              key={`vein-${i}`}
+              d={path.d}
+              fill="none"
+              stroke="hsl(220 70% 50%)"
+              strokeWidth={path.type === 'main' ? 3.5 : 2}
+              strokeLinecap="round"
+              opacity={0.7}
+            />
+          ))}
+        </g>
+
+        {/* Capillary networks */}
+        <g className="capillaries" opacity="0.4">
+          {/* Head capillaries */}
+          <circle cx="150" cy="70" r="20" fill="none" stroke="hsl(280 50% 60%)" strokeWidth="0.5" strokeDasharray="2,2" />
+          {/* Hand capillaries */}
+          <circle cx="60" cy="320" r="15" fill="none" stroke="hsl(280 50% 60%)" strokeWidth="0.5" strokeDasharray="2,2" />
+          <circle cx="240" cy="320" r="15" fill="none" stroke="hsl(280 50% 60%)" strokeWidth="0.5" strokeDasharray="2,2" />
+          {/* Foot capillaries */}
+          <circle cx="115" cy="560" r="12" fill="none" stroke="hsl(280 50% 60%)" strokeWidth="0.5" strokeDasharray="2,2" />
+          <circle cx="185" cy="560" r="12" fill="none" stroke="hsl(280 50% 60%)" strokeWidth="0.5" strokeDasharray="2,2" />
+        </g>
+
+        {/* Animated blood cells in arteries */}
+        <g className="blood-cells-arteries">
+          {[...Array(12)].map((_, i) => {
+            const pathIndex = i % arteryPaths.length;
+            const offset = ((progress * 100 + i * 8.3) % 100) / 100;
+            return (
+              <circle
+                key={`arterial-cell-${i}`}
+                r="3"
+                fill="hsl(0 90% 55%)"
+                opacity={0.9}
+              >
+                <animateMotion
+                  dur={`${2 + pathIndex * 0.3}s`}
+                  repeatCount="indefinite"
+                  path={arteryPaths[pathIndex].d}
+                  begin={`${i * 0.2}s`}
+                />
+              </circle>
+            );
+          })}
+        </g>
+
+        {/* Animated blood cells in veins */}
+        <g className="blood-cells-veins">
+          {[...Array(10)].map((_, i) => {
+            const pathIndex = i % veinPaths.length;
+            return (
+              <circle
+                key={`venous-cell-${i}`}
+                r="2.5"
+                fill="hsl(220 80% 45%)"
+                opacity={0.85}
+              >
+                <animateMotion
+                  dur={`${2.5 + pathIndex * 0.3}s`}
+                  repeatCount="indefinite"
+                  path={veinPaths[pathIndex].d}
+                  begin={`${i * 0.25}s`}
+                />
+              </circle>
+            );
+          })}
+        </g>
+
+        {/* Pulse waves */}
+        <g className="pulse-waves">
+          {[0, 1, 2].map((i) => {
+            const delay = i * 0.3;
+            return (
+              <circle
+                key={`pulse-${i}`}
+                cx="150"
+                cy="185"
+                r="10"
+                fill="none"
+                stroke="hsl(0 80% 60%)"
+                strokeWidth="2"
+                opacity="0"
+              >
+                <animate
+                  attributeName="r"
+                  values="10;40"
+                  dur="1.5s"
+                  begin={`${delay}s`}
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  values="0.6;0"
+                  dur="1.5s"
+                  begin={`${delay}s`}
+                  repeatCount="indefinite"
+                />
+              </circle>
+            );
+          })}
+        </g>
+      </g>
+    );
+  };
+
   // Render skeleton background
   const renderSkeletonBackground = () => {
     if (layer !== 'skeleton' || xrayMode) return null;
@@ -486,6 +682,9 @@ export const BodySVG: React.FC<BodySVGProps> = ({
         
         {/* Respiratory system with breathing animation */}
         {renderRespiratorySystem()}
+        
+        {/* Circulatory system with blood flow */}
+        {renderCirculatorySystem()}
 
         {/* Interactive regions */}
         {!xrayMode && regions.map((region) => {

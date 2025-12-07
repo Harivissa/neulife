@@ -1,21 +1,23 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Gender, BodyLayer, BodyView, RegionData, InteractiveBodyMapProps, BodyRegion } from './types';
+import { Gender, BodyLayer, BodyView, RegionData, InteractiveBodyMapProps, BodyRegion, SymptomHistoryEntry } from './types';
 import { BodySVG } from './BodySVG';
+import { SymptomHistory } from './SymptomHistory';
 import { cn } from '@/lib/utils';
-import { User, UserRound, Eye, Layers, RotateCcw, Scan, Wind } from 'lucide-react';
+import { User, UserRound, Eye, Layers, RotateCcw, Scan, Wind, Heart } from 'lucide-react';
 
 const genderOptions: { value: Gender; label: string; icon: React.ReactNode }[] = [
   { value: 'male', label: 'Male', icon: <User className="w-4 h-4" /> },
   { value: 'female', label: 'Female', icon: <UserRound className="w-4 h-4" /> },
 ];
 
-const layerOptions: { value: BodyLayer; label: string }[] = [
+const layerOptions: { value: BodyLayer; label: string; icon?: React.ReactNode }[] = [
   { value: 'skin', label: 'Skin' },
   { value: 'muscles', label: 'Muscles' },
   { value: 'skeleton', label: 'Skeleton' },
   { value: 'organs', label: 'Organs' },
   { value: 'nervous', label: 'Nervous' },
-  { value: 'respiratory', label: 'Respiratory' },
+  { value: 'respiratory', label: 'Respiratory', icon: <Wind className="w-3 h-3" /> },
+  { value: 'circulatory', label: 'Circulatory', icon: <Heart className="w-3 h-3" /> },
 ];
 
 const viewOptions: { value: BodyView; label: string }[] = [
@@ -35,6 +37,7 @@ const lungSymptomKeywords = [
 
 export const InteractiveBodyMap: React.FC<InteractiveBodyMapProps> = ({
   onRegionSelect,
+  onSymptomHistoryChange,
   initialGender = 'male',
   initialLayer = 'skin',
   initialView = 'front',
@@ -47,6 +50,7 @@ export const InteractiveBodyMap: React.FC<InteractiveBodyMapProps> = ({
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [lastSelection, setLastSelection] = useState<RegionData | null>(null);
   const [xrayMode, setXrayMode] = useState(false);
+  const [symptomHistory, setSymptomHistory] = useState<SymptomHistoryEntry[]>([]);
 
   // Check if symptoms contain lung-related keywords
   const hasLungSymptoms = useMemo(() => {
@@ -68,6 +72,20 @@ export const InteractiveBodyMap: React.FC<InteractiveBodyMapProps> = ({
       
       setLastSelection(regionData);
       
+      // Add to symptom history
+      const historyEntry: SymptomHistoryEntry = {
+        ...regionData,
+        id: `${Date.now()}-${region.id}`,
+        timestamp: new Date(),
+      };
+      
+      const newHistory = [historyEntry, ...symptomHistory];
+      setSymptomHistory(newHistory);
+      
+      if (onSymptomHistoryChange) {
+        onSymptomHistoryChange(newHistory);
+      }
+      
       if (onRegionSelect) {
         onRegionSelect(regionData);
       }
@@ -75,8 +93,23 @@ export const InteractiveBodyMap: React.FC<InteractiveBodyMapProps> = ({
       // Log the selection for debugging
       console.log('Region selected:', JSON.stringify(regionData, null, 2));
     },
-    [gender, layer, view, onRegionSelect]
+    [gender, layer, view, onRegionSelect, symptomHistory, onSymptomHistoryChange]
   );
+
+  const handleRemoveSymptom = useCallback((id: string) => {
+    const newHistory = symptomHistory.filter(entry => entry.id !== id);
+    setSymptomHistory(newHistory);
+    if (onSymptomHistoryChange) {
+      onSymptomHistoryChange(newHistory);
+    }
+  }, [symptomHistory, onSymptomHistoryChange]);
+
+  const handleClearHistory = useCallback(() => {
+    setSymptomHistory([]);
+    if (onSymptomHistoryChange) {
+      onSymptomHistoryChange([]);
+    }
+  }, [onSymptomHistoryChange]);
 
   const resetSelection = () => {
     setSelectedRegion(null);
@@ -129,7 +162,6 @@ export const InteractiveBodyMap: React.FC<InteractiveBodyMapProps> = ({
         </div>
       </div>
 
-      {/* Layer Tabs */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
           <Layers className="w-4 h-4" />
@@ -144,14 +176,15 @@ export const InteractiveBodyMap: React.FC<InteractiveBodyMapProps> = ({
                 resetSelection();
               }}
               className={cn(
-                'flex-1 min-w-[70px] px-2 py-2 text-xs sm:text-sm font-medium rounded-md transition-all duration-200',
+                'flex-1 min-w-[60px] px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1',
                 layer === option.value
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground',
-                option.value === 'respiratory' && hasLungSymptoms && layer !== 'respiratory' && 'animate-pulse bg-blue-500/20'
+                option.value === 'respiratory' && hasLungSymptoms && layer !== 'respiratory' && 'animate-pulse bg-blue-500/20',
+                option.value === 'circulatory' && 'text-red-400'
               )}
             >
-              {option.value === 'respiratory' && <Wind className="w-3 h-3 inline mr-1" />}
+              {option.icon}
               {option.label}
             </button>
           ))}
@@ -262,6 +295,13 @@ export const InteractiveBodyMap: React.FC<InteractiveBodyMapProps> = ({
           </pre>
         </div>
       )}
+
+      {/* Symptom History Panel */}
+      <SymptomHistory
+        history={symptomHistory}
+        onRemove={handleRemoveSymptom}
+        onClear={handleClearHistory}
+      />
     </div>
   );
 };
