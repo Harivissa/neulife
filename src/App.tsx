@@ -16,6 +16,8 @@ import BodyMapPage from "./pages/app/BodyMapPage";
 import DemoModePage from "./pages/app/DemoModePage";
 import HealthCardPage from "./pages/app/HealthCardPage";
 import ReportPage from "./pages/app/ReportPage";
+import SettingsPage from "./pages/app/SettingsPage";
+import WellnessPage from "./pages/app/WellnessPage";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +42,8 @@ const App = () => (
               <Route path="demo-mode" element={<DemoModePage />} />
               <Route path="health-card" element={<HealthCardPage />} />
               <Route path="report" element={<ReportPage />} />
+              <Route path="wellness" element={<WellnessPage />} />
+              <Route path="settings" element={<SettingsPage />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />

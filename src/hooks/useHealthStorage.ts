@@ -13,8 +13,11 @@ export interface SymptomEntry {
   region: string;
   regionLabel: string;
   layer: string;
+  view?: string;
   severity: number;
-  notes: string;
+  notes?: string;
+  gender?: string;
+  additionalNotes?: string;
   timestamp: Date;
 }
 

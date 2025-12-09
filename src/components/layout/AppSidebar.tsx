@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Heart,
   User,
+  Sparkles,
 } from 'lucide-react';
 
 const navItems = [
@@ -20,6 +21,8 @@ const navItems = [
   { path: '/app/demo-mode', label: 'Demo Mode', icon: Stethoscope },
   { path: '/app/health-card', label: 'Health Card', icon: CreditCard },
   { path: '/app/report', label: 'Report', icon: FileText },
+  { path: '/app/wellness', label: 'Wellness', icon: Sparkles },
+  { path: '/app/settings', label: 'Settings', icon: Settings },
 ];
 
 export const AppSidebar = () => {
@@ -49,7 +52,9 @@ export const AppSidebar = () => {
       {/* Navigation */}
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = item.path === '/app' 
+            ? location.pathname === '/app'
+            : location.pathname.startsWith(item.path);
           return (
             <NavLink
               key={item.path}
