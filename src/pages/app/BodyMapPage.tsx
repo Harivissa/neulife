@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { InteractiveBodyMap, RegionData } from '@/components/InteractiveBodyMap';
-import { AIAnalysis } from '@/components/analysis/AIAnalysis';
+import { EnhancedAIAnalysis } from '@/components/analysis/EnhancedAIAnalysis';
 import { useHealthStorage } from '@/hooks/useHealthStorage';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
@@ -8,10 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { Activity, Plus } from 'lucide-react';
+import { Activity, Plus, User, Users } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const BodyMapPage = () => {
   const { addSymptom, healthData } = useHealthStorage();
+  const [gender, setGender] = useState<'male' | 'female'>('male');
   const [selectedRegion, setSelectedRegion] = useState<RegionData | null>(null);
   const [severity, setSeverity] = useState(5);
   const [notes, setNotes] = useState('');
@@ -33,6 +35,7 @@ const BodyMapPage = () => {
       layer: selectedRegion.layer,
       severity,
       notes,
+      gender,
     });
 
     // Add to symptoms text
@@ -43,6 +46,12 @@ const BodyMapPage = () => {
     setSelectedRegion(null);
     setSeverity(5);
     setNotes('');
+  };
+
+  const getSeverityColor = (val: number) => {
+    if (val <= 3) return 'text-secondary';
+    if (val <= 6) return 'text-amber-400';
+    return 'text-destructive';
   };
 
   return (
@@ -58,6 +67,29 @@ const BodyMapPage = () => {
           </p>
         </div>
       </div>
+
+      {/* Gender Selector */}
+      <Card className="p-4">
+        <Label className="mb-3 block">Select Gender</Label>
+        <div className="flex gap-2">
+          <Button
+            variant={gender === 'male' ? 'default' : 'outline'}
+            onClick={() => setGender('male')}
+            className="flex-1"
+          >
+            <User className="h-4 w-4 mr-2" />
+            Male
+          </Button>
+          <Button
+            variant={gender === 'female' ? 'default' : 'outline'}
+            onClick={() => setGender('female')}
+            className="flex-1"
+          >
+            <Users className="h-4 w-4 mr-2" />
+            Female
+          </Button>
+        </div>
+      </Card>
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Body Map */}
@@ -87,7 +119,12 @@ const BodyMapPage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Severity: {severity}/10</Label>
+                <div className="flex justify-between">
+                  <Label>Severity</Label>
+                  <span className={cn('font-bold', getSeverityColor(severity))}>
+                    {severity}/10
+                  </span>
+                </div>
                 <Slider
                   value={[severity]}
                   onValueChange={([v]) => setSeverity(v)}
@@ -113,6 +150,20 @@ const BodyMapPage = () => {
                 />
               </div>
 
+              {/* Output JSON Preview */}
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <Label className="text-xs block mb-2">Output JSON</Label>
+                <pre className="text-xs overflow-auto">
+                  {JSON.stringify({
+                    gender,
+                    layer: selectedRegion.layer,
+                    view: selectedRegion.view,
+                    region: selectedRegion.region,
+                    severity,
+                  }, null, 2)}
+                </pre>
+              </div>
+
               <Button onClick={handleSaveSymptom} className="w-full">
                 Save Symptom
               </Button>
@@ -130,15 +181,16 @@ const BodyMapPage = () => {
               rows={4}
             />
           </Card>
-
-          {/* AI Analysis */}
-          <AIAnalysis
-            vitals={healthData.vitals}
-            symptoms={healthData.symptoms}
-            additionalSymptoms={symptoms}
-          />
         </div>
       </div>
+
+      {/* Enhanced AI Analysis */}
+      <EnhancedAIAnalysis
+        vitals={healthData.vitals}
+        symptoms={healthData.symptoms}
+        additionalSymptoms={symptoms}
+        gender={gender}
+      />
     </div>
   );
 };

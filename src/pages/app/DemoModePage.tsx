@@ -8,7 +8,7 @@ import { VirtualRespiratoryRate } from '@/components/demo/VirtualRespiratoryRate
 import { VirtualGlucose } from '@/components/demo/VirtualGlucose';
 import { VirtualBMI } from '@/components/demo/VirtualBMI';
 import { MiniECG } from '@/components/demo/MiniECG';
-import { AIAnalysis } from '@/components/analysis/AIAnalysis';
+import { EnhancedAIAnalysis } from '@/components/analysis/EnhancedAIAnalysis';
 import { Card } from '@/components/ui/card';
 import { Stethoscope } from 'lucide-react';
 import { toast } from 'sonner';
@@ -86,8 +86,8 @@ const DemoModePage = () => {
         <MiniECG heartRate={heartRate} />
       </div>
 
-      {/* AI Analysis */}
-      <AIAnalysis
+      {/* Enhanced AI Analysis */}
+      <EnhancedAIAnalysis
         vitals={healthData.vitals}
         symptoms={healthData.symptoms}
       />
