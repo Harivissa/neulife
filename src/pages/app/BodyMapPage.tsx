@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { Activity, Plus, User, Users } from 'lucide-react';
+import { Activity, Plus, User, Users, Mic } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { VoiceInput } from '@/components/VoiceInput';
 
 const BodyMapPage = () => {
   const { addSymptom, healthData } = useHealthStorage();
@@ -140,10 +141,16 @@ const BodyMapPage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="notes">Additional Notes</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="notes">Additional Notes</Label>
+                  <VoiceInput 
+                    onTranscription={(text) => setNotes(prev => prev ? `${prev} ${text}` : text)}
+                    size="sm"
+                  />
+                </div>
                 <Textarea
                   id="notes"
-                  placeholder="Describe the symptom..."
+                  placeholder="Describe the symptom or use voice input..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
@@ -172,14 +179,22 @@ const BodyMapPage = () => {
 
           {/* Additional symptoms */}
           <Card className="p-4 space-y-3">
-            <Label htmlFor="additionalSymptoms">Describe Symptoms</Label>
-            <Textarea
-              id="additionalSymptoms"
-              placeholder="Describe any additional symptoms..."
-              value={symptoms}
-              onChange={(e) => setSymptoms(e.target.value)}
-              rows={4}
-            />
+            <div className="flex items-center justify-between">
+              <Label htmlFor="additionalSymptoms">Describe Symptoms</Label>
+              <VoiceInput 
+                onTranscription={(text) => setSymptoms(prev => prev ? `${prev} ${text}` : text)}
+                size="sm"
+              />
+            </div>
+            <div className="relative">
+              <Textarea
+                id="additionalSymptoms"
+                placeholder="Describe your symptoms or tap the mic to speak..."
+                value={symptoms}
+                onChange={(e) => setSymptoms(e.target.value)}
+                rows={4}
+              />
+            </div>
           </Card>
         </div>
       </div>
