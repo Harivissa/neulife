@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
 import { useHealthStorage, VitalReading } from '@/hooks/useHealthStorage';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   CreditCard, 
   Trash2, 
@@ -13,12 +13,14 @@ import {
   Wind,
   Droplet,
   Scale,
-  Clock
+  Clock,
+  TrendingUp,
+  History
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { PersonalizedGuidance } from '@/components/guidance/PersonalizedGuidance';
+import { VitalTrendAnalysis } from '@/components/health/VitalTrendAnalysis';
 
 const getVitalIcon = (type: VitalReading['type']) => {
   switch (type) {
@@ -61,30 +63,6 @@ const formatVitalValue = (vital: VitalReading) => {
 const HealthCardPage = () => {
   const { healthData, removeVital, removeSymptom, clearAll } = useHealthStorage();
 
-  // Prepare chart data for heart rate
-  const heartRateData = useMemo(() => {
-    return healthData.vitals
-      .filter((v) => v.type === 'heart_rate')
-      .slice(0, 10)
-      .reverse()
-      .map((v, i) => ({
-        time: format(new Date(v.timestamp), 'HH:mm'),
-        value: v.value as number,
-      }));
-  }, [healthData.vitals]);
-
-  // Prepare chart data for temperature
-  const temperatureData = useMemo(() => {
-    return healthData.vitals
-      .filter((v) => v.type === 'temperature')
-      .slice(0, 10)
-      .reverse()
-      .map((v, i) => ({
-        time: format(new Date(v.timestamp), 'HH:mm'),
-        value: v.value as number,
-      }));
-  }, [healthData.vitals]);
-
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -114,157 +92,124 @@ const HealthCardPage = () => {
         </Button>
       </div>
 
-      {/* Charts */}
-      {(heartRateData.length > 1 || temperatureData.length > 1) && (
-        <div className="grid md:grid-cols-2 gap-4">
-          {heartRateData.length > 1 && (
-            <Card className="p-4">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Heart className="h-4 w-4 text-red-400" />
-                Heart Rate Trend
-              </h3>
-              <ResponsiveContainer width="100%" height={150}>
-                <LineChart data={heartRateData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="time" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis domain={[40, 140]} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }} 
-                  />
-                  <Line type="monotone" dataKey="value" stroke="hsl(var(--destructive))" strokeWidth={2} dot={{ fill: 'hsl(var(--destructive))' }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
-          )}
-          {temperatureData.length > 1 && (
-            <Card className="p-4">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Thermometer className="h-4 w-4 text-orange-400" />
-                Temperature Trend
-              </h3>
-              <ResponsiveContainer width="100%" height={150}>
-                <LineChart data={temperatureData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="time" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis domain={[96, 104]} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }} 
-                  />
-                  <Line type="monotone" dataKey="value" stroke="hsl(var(--accent))" strokeWidth={2} dot={{ fill: 'hsl(var(--accent))' }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
-          )}
-        </div>
-      )}
+      <Tabs defaultValue="trends" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="trends" className="gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Trend Analysis
+          </TabsTrigger>
+          <TabsTrigger value="history" className="gap-2">
+            <History className="h-4 w-4" />
+            History
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Vitals history */}
-      <Card className="p-4">
-        <h3 className="font-semibold mb-4">Vitals History (Last 10)</h3>
-        {healthData.vitals.length > 0 ? (
-          <div className="space-y-2">
-            {healthData.vitals.slice(0, 10).map((vital) => {
-              const Icon = getVitalIcon(vital.type);
-              const colorClass = getVitalColor(vital.type);
-              return (
-                <div
-                  key={vital.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center', colorClass)}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="font-medium capitalize text-sm">
-                        {vital.type.replace('_', ' ')}
-                      </div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {format(new Date(vital.timestamp), 'MMM d, HH:mm')}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="font-mono font-bold">
-                        {formatVitalValue(vital)}
-                      </div>
-                      <div className="text-xs text-muted-foreground">{vital.unit}</div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeVital(vital.id)}
+        <TabsContent value="trends" className="space-y-4">
+          <VitalTrendAnalysis vitals={healthData.vitals} />
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-4">
+          {/* Vitals history */}
+          <Card className="p-4">
+            <h3 className="font-semibold mb-4">Vitals History (Last 10)</h3>
+            {healthData.vitals.length > 0 ? (
+              <div className="space-y-2">
+                {healthData.vitals.slice(0, 10).map((vital) => {
+                  const Icon = getVitalIcon(vital.type);
+                  const colorClass = getVitalColor(vital.type);
+                  return (
+                    <div
+                      key={vital.id}
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No vitals recorded yet</p>
-          </div>
-        )}
-      </Card>
+                      <div className="flex items-center gap-3">
+                        <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center', colorClass)}>
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="font-medium capitalize text-sm">
+                            {vital.type.replace('_', ' ')}
+                          </div>
+                          <div className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {format(new Date(vital.timestamp), 'MMM d, HH:mm')}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <div className="font-mono font-bold">
+                            {formatVitalValue(vital)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">{vital.unit}</div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          onClick={() => removeVital(vital.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No vitals recorded yet</p>
+              </div>
+            )}
+          </Card>
 
-      {/* Symptoms history */}
-      <Card className="p-4">
-        <h3 className="font-semibold mb-4">Symptom History (Last 10)</h3>
-        {healthData.symptoms.length > 0 ? (
-          <div className="space-y-2">
-            {healthData.symptoms.slice(0, 10).map((symptom) => (
-              <div
-                key={symptom.id}
-                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Activity className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-sm">{symptom.regionLabel}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {symptom.layer} layer • Severity: {symptom.severity}/10
+          {/* Symptoms history */}
+          <Card className="p-4">
+            <h3 className="font-semibold mb-4">Symptom History (Last 10)</h3>
+            {healthData.symptoms.length > 0 ? (
+              <div className="space-y-2">
+                {healthData.symptoms.slice(0, 10).map((symptom) => (
+                  <div
+                    key={symptom.id}
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <Activity className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-sm">{symptom.regionLabel}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {symptom.layer} layer • Severity: {symptom.severity}/10
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-xs text-muted-foreground">
+                        {format(new Date(symptom.timestamp), 'MMM d, HH:mm')}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => removeSymptom(symptom.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-xs text-muted-foreground">
-                    {format(new Date(symptom.timestamp), 'MMM d, HH:mm')}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => removeSymptom(symptom.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No symptoms logged yet</p>
-          </div>
-        )}
-      </Card>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No symptoms logged yet</p>
+              </div>
+            )}
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Personalized Guidance */}
       <PersonalizedGuidance />
