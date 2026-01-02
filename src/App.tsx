@@ -18,12 +18,13 @@ import HealthCardPage from "./pages/app/HealthCardPage";
 import ReportPage from "./pages/app/ReportPage";
 import SettingsPage from "./pages/app/SettingsPage";
 import WellnessPage from "./pages/app/WellnessPage";
+import MedicalAIChatPage from "./pages/app/MedicalAIChatPage";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="new-life-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="neulife-ui-theme">
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -35,11 +36,12 @@ const App = () => (
             <Route path="/triage" element={<Triage />} />
             <Route path="/admin" element={<Admin />} />
             
-            {/* NEULIFE App Routes */}
+            {/* NEULIFE Protected App Routes */}
             <Route path="/app" element={<AppLayout />}>
               <Route index element={<AppHome />} />
               <Route path="body-map" element={<BodyMapPage />} />
               <Route path="demo-mode" element={<DemoModePage />} />
+              <Route path="ai-chat" element={<MedicalAIChatPage />} />
               <Route path="health-card" element={<HealthCardPage />} />
               <Route path="report" element={<ReportPage />} />
               <Route path="wellness" element={<WellnessPage />} />
