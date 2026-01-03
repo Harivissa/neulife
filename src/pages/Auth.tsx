@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useTranslation } from "react-i18next";
+import { Footer } from "@/components/layout/Footer";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -144,7 +145,7 @@ const Auth = () => {
             <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
               <Heart className="h-7 w-7 text-primary-foreground" />
             </div>
-            <h1 className="text-3xl font-bold">NEULIFE</h1>
+            <h1 className="text-3xl font-bold">NeuLife</h1>
           </div>
 
           {resetEmailSent ? (
@@ -362,6 +363,7 @@ const Auth = () => {
           </p>
         </div>
       </Card>
+      <Footer />
     </div>
   );
 };

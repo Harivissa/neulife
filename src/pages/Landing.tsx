@@ -92,7 +92,7 @@ const Landing = () => {
                 onClick={() => navigate("/app")}
               >
                 <Play className="h-5 w-5 mr-2 fill-current" />
-                Launch NEULIFE
+                Launch NeuLife
               </Button>
               <Button 
                 size="lg"
@@ -269,10 +269,10 @@ const Landing = () => {
       <footer className="border-t border-border/10 py-8 mt-16">
         <div className="container mx-auto px-6 text-center space-y-2">
           <p className="text-muted-foreground text-sm">
-            © 2025 NeuLife. {t('footerText')}
+            © {new Date().getFullYear()} NeuLife. All rights reserved.
           </p>
           <p className="text-muted-foreground text-xs">
-            {t('footerCredit')}
+            Developed by Future Engineer: Hari Vissa & Future Doctor: Michelle Manda
           </p>
         </div>
       </footer>

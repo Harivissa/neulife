@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { Footer } from "@/components/layout/Footer";
 import { useTranslation } from "react-i18next";
 import { BodyVisualization3D } from "@/components/BodyVisualization3D";
 import { InteractiveBodyMap, RegionData } from "@/components/InteractiveBodyMap";
@@ -121,7 +122,7 @@ const Triage = () => {
             <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
               <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold">New Life</h1>
+            <h1 className="text-2xl font-bold">NeuLife</h1>
           </div>
           <Button variant="outline" onClick={() => navigate("/")}>
             {t('backToHome')}
@@ -325,6 +326,7 @@ const Triage = () => {
         </div>
       </main>
       
+      <Footer />
       <VoiceAssistant />
     </div>
   );

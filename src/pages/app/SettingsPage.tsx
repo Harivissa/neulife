@@ -239,7 +239,7 @@ const SettingsPage = () => {
 
       {/* App Info */}
       <div className="text-center text-sm text-muted-foreground pt-4">
-        <p>NEULIFE Healthcare Triage System</p>
+        <p>NeuLife Healthcare Triage System</p>
         <p>Version 1.0.0</p>
         <p className="mt-2">All data stored locally on your device</p>
       </div>
