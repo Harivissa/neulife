@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { AppSidebar } from './AppSidebar';
+import { Footer } from './Footer';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -22,6 +23,7 @@ export const AppLayout = () => {
             <main className="flex-1 overflow-auto">
               <Outlet />
             </main>
+            <Footer />
           </div>
         </div>
       </SidebarProvider>

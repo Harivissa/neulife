@@ -47,7 +47,7 @@ export const AppSidebar = () => {
         </div>
         {!collapsed && (
           <div className="overflow-hidden">
-            <h1 className="text-lg font-bold text-sidebar-foreground">NEULIFE</h1>
+            <h1 className="text-lg font-bold text-sidebar-foreground">NeuLife</h1>
             <p className="text-xs text-muted-foreground">Healthcare Triage</p>
           </div>
         )}

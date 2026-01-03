@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useTranslation } from "react-i18next";
+import { Footer } from "@/components/layout/Footer";
 
 const Admin = () => {
   const { t } = useTranslation();
@@ -169,7 +170,7 @@ const Admin = () => {
             <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
               <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold">New Life Admin</h1>
+            <h1 className="text-2xl font-bold">NeuLife Admin</h1>
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
@@ -353,6 +354,7 @@ const Admin = () => {
           )}
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

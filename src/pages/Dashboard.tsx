@@ -14,6 +14,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useTranslation } from "react-i18next";
 import QRCode from "qrcode";
+import { Footer } from "@/components/layout/Footer";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -158,7 +159,7 @@ const Dashboard = () => {
             <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
               <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold">New Life</h1>
+            <h1 className="text-2xl font-bold">NeuLife</h1>
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
@@ -361,6 +362,7 @@ const Dashboard = () => {
           </form>
         </DialogContent>
       </Dialog>
+      <Footer />
     </div>
   );
 };

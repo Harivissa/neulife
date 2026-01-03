@@ -25,7 +25,7 @@ const ReportPage = () => {
   const generatePDFContent = () => {
     const now = new Date();
     let content = `
-NEULIFE HEALTH REPORT
+NeuLife Health Report
 Generated: ${format(now, 'PPpp')}
 =====================================
 
