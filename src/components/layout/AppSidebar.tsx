@@ -21,9 +21,7 @@ import { Button } from '@/components/ui/button';
 
 const navItems = [
   { path: '/app', label: 'Home', icon: Home },
-  { path: '/app/body-map', label: 'Body Map', icon: Activity },
-  { path: '/app/demo-mode', label: 'Demo Instruments', icon: Stethoscope },
-  { path: '/app/ai-chat', label: 'Ask Medical AI', icon: MessageCircle },
+  { path: '/app/health-assistant', label: 'Health Assistant', icon: Heart },
   { path: '/app/health-card', label: 'Health Card', icon: CreditCard },
   { path: '/app/report', label: 'Reports', icon: FileText },
   { path: '/app/wellness', label: 'Wellness', icon: Sparkles },
