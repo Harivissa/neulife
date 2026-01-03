@@ -2,35 +2,31 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Activity, 
-  Stethoscope, 
+  Heart,
   CreditCard, 
   FileText, 
-  Heart,
   TrendingUp,
   Clock,
-  ArrowRight
+  ArrowRight,
+  MessageCircle,
+  Sparkles
 } from 'lucide-react';
 import { useHealthStorage } from '@/hooks/useHealthStorage';
+import { useAuth } from '@/hooks/useAuth';
 
 const AppHome = () => {
   const navigate = useNavigate();
   const { healthData, isLoaded } = useHealthStorage();
+  const { profile } = useAuth();
 
   const quickActions = [
     {
-      title: 'Body Map',
-      description: 'Mark symptoms on interactive body',
-      icon: Activity,
-      path: '/app/body-map',
+      title: 'Start Health Check',
+      description: 'AI-guided symptom assessment',
+      icon: Heart,
+      path: '/app/health-assistant',
       color: 'bg-primary/20 text-primary',
-    },
-    {
-      title: 'Demo Mode',
-      description: 'Virtual medical instruments',
-      icon: Stethoscope,
-      path: '/app/demo-mode',
-      color: 'bg-secondary/20 text-secondary',
+      primary: true,
     },
     {
       title: 'Health Card',
@@ -46,6 +42,13 @@ const AppHome = () => {
       path: '/app/report',
       color: 'bg-purple-500/20 text-purple-400',
     },
+    {
+      title: 'Wellness Insights',
+      description: 'Personalized health tips',
+      icon: Sparkles,
+      path: '/app/wellness',
+      color: 'bg-secondary/20 text-secondary',
+    },
   ];
 
   const recentVitals = isLoaded ? healthData.vitals.slice(0, 3) : [];
@@ -57,7 +60,9 @@ const AppHome = () => {
       <div className="text-center space-y-4 py-8">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
           <Heart className="h-4 w-4 text-primary animate-pulse" />
-          <span className="text-sm font-medium text-primary">Welcome to NEULIFE</span>
+          <span className="text-sm font-medium text-primary">
+            Welcome{profile?.name ? `, ${profile.name}` : ''} to NEULIFE
+          </span>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold">
           Your Health,{' '}
@@ -66,8 +71,19 @@ const AppHome = () => {
           </span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Track symptoms, record vitals, and get AI-powered health insights—all stored locally on your device.
+          Describe how you're feeling and our AI will guide you through checking your health step by step.
         </p>
+        
+        {/* Primary CTA */}
+        <Button 
+          size="lg" 
+          className="mt-4 gap-2 bg-gradient-to-r from-primary to-primary-glow hover:opacity-90"
+          onClick={() => navigate('/app/health-assistant')}
+        >
+          <MessageCircle className="h-5 w-5" />
+          Start Health Assessment
+          <ArrowRight className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* Quick actions */}
@@ -75,7 +91,9 @@ const AppHome = () => {
         {quickActions.map((action) => (
           <Card
             key={action.path}
-            className="p-4 cursor-pointer hover:border-primary/50 hover:shadow-lg transition-all group"
+            className={`p-4 cursor-pointer hover:border-primary/50 hover:shadow-lg transition-all group ${
+              action.primary ? 'border-primary/30 bg-primary/5' : ''
+            }`}
             onClick={() => navigate(action.path)}
           >
             <div className={`h-12 w-12 rounded-xl ${action.color} flex items-center justify-center mb-4`}>
@@ -103,7 +121,7 @@ const AppHome = () => {
         </Card>
         <Card className="p-4 flex items-center gap-4">
           <div className="h-12 w-12 rounded-full bg-secondary/20 flex items-center justify-center">
-            <Activity className="h-6 w-6 text-secondary" />
+            <Heart className="h-6 w-6 text-secondary" />
           </div>
           <div>
             <div className="text-2xl font-bold">{healthData.symptoms.length}</div>
@@ -154,8 +172,16 @@ const AppHome = () => {
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              <Stethoscope className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <Heart className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No vitals recorded yet</p>
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="mt-2"
+                onClick={() => navigate('/app/health-assistant')}
+              >
+                Start a health check
+              </Button>
             </div>
           )}
         </Card>
@@ -164,7 +190,7 @@ const AppHome = () => {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold">Recent Symptoms</h3>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/app/body-map')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/app/health-assistant')}>
               Add symptom
             </Button>
           </div>
@@ -181,8 +207,16 @@ const AppHome = () => {
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No symptoms logged yet</p>
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="mt-2"
+                onClick={() => navigate('/app/health-assistant')}
+              >
+                Describe how you feel
+              </Button>
             </div>
           )}
         </Card>
@@ -192,7 +226,7 @@ const AppHome = () => {
       <div className="p-4 bg-muted/30 rounded-lg border border-border text-center">
         <p className="text-sm text-muted-foreground">
           <strong className="text-foreground">Important:</strong> NEULIFE is for informational purposes only and does not provide medical advice. 
-          For emergencies, call your local emergency number. All data is stored locally on your device.
+          For emergencies, call your local emergency number.
         </p>
       </div>
     </div>
