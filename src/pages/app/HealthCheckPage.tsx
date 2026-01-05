@@ -25,6 +25,7 @@ import {
   UserRound,
   Layers,
   Eye,
+  Scale,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { InteractiveBodyMap } from '@/components/InteractiveBodyMap';
@@ -42,6 +43,8 @@ interface VitalReadings {
   spo2?: number;
   glucose?: number;
   respiratoryRate?: number;
+  bmiWeight?: number;
+  bmiHeight?: number;
 }
 
 interface TriageResult {
@@ -110,6 +113,24 @@ const HealthCheckPage = () => {
     return { label: 'Very High', color: 'text-red-400', hint: 'High blood sugar - consult a doctor' };
   };
 
+  // BMI calculation and status
+  const calculateBMI = (weight?: number, height?: number) => {
+    if (!weight || !height || height === 0) return null;
+    return weight / Math.pow(height / 100, 2);
+  };
+
+  const getBMIStatus = (bmi: number | null) => {
+    if (!bmi) return null;
+    if (bmi < 18.5) return { label: 'Underweight', color: 'text-blue-400', hint: 'Below healthy weight range' };
+    if (bmi < 25) return { label: 'Normal', color: 'text-emerald-400', hint: 'Healthy weight range' };
+    if (bmi < 30) return { label: 'Overweight', color: 'text-amber-400', hint: 'Above healthy weight range' };
+    if (bmi < 35) return { label: 'Obese Class I', color: 'text-orange-400', hint: 'Consider lifestyle changes' };
+    return { label: 'Obese Class II+', color: 'text-red-400', hint: 'Health risks - consult a doctor' };
+  };
+
+  const currentBMI = calculateBMI(vitals.bmiWeight, vitals.bmiHeight);
+  const bmiScalePos = currentBMI ? Math.min(100, Math.max(0, ((currentBMI - 15) / 25) * 100)) : 50;
+
   // Live summary generation
   const liveSummary = useMemo(() => {
     const items: string[] = [];
@@ -147,8 +168,13 @@ const HealthCheckPage = () => {
       items.push(`Blood Sugar: ${vitals.glucose} mg/dL - ${status?.label}. ${status?.hint}`);
     }
 
+    if (currentBMI) {
+      const status = getBMIStatus(currentBMI);
+      items.push(`BMI: ${currentBMI.toFixed(1)} kg/m² - ${status?.label}. ${status?.hint}`);
+    }
+
     return items;
-  }, [symptoms, selectedRegion, painSeverity, vitals]);
+  }, [symptoms, selectedRegion, painSeverity, vitals, currentBMI]);
 
   const hasAnyData = symptoms.trim() || selectedRegion || Object.keys(vitals).length > 0;
 
@@ -543,6 +569,76 @@ const HealthCheckPage = () => {
                     />
                     <span className="text-muted-foreground">breaths/min</span>
                   </div>
+                </GadgetCard>
+
+                {/* BMI Calculator */}
+                <GadgetCard
+                  icon={<Scale className="h-5 w-5 text-emerald-400" />}
+                  title="BMI Calculator"
+                  hint="Body Mass Index indicates if your weight is healthy for your height"
+                  iconBg="bg-emerald-500/20"
+                >
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs">Weight (kg)</Label>
+                      <Input
+                        type="number"
+                        min="20"
+                        max="300"
+                        placeholder="70"
+                        value={vitals.bmiWeight || ''}
+                        onChange={(e) => updateVital('bmiWeight', e.target.value ? parseFloat(e.target.value) : undefined)}
+                        className="font-mono"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Height (cm)</Label>
+                      <Input
+                        type="number"
+                        min="100"
+                        max="250"
+                        placeholder="170"
+                        value={vitals.bmiHeight || ''}
+                        onChange={(e) => updateVital('bmiHeight', e.target.value ? parseFloat(e.target.value) : undefined)}
+                        className="font-mono"
+                      />
+                    </div>
+                  </div>
+                  
+                  {currentBMI && (
+                    <>
+                      <div className="text-center py-3 bg-muted/50 rounded-lg mt-3">
+                        <div className="text-3xl font-mono font-bold text-foreground">
+                          {currentBMI.toFixed(1)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">kg/m²</div>
+                      </div>
+                      
+                      {/* BMI Scale */}
+                      <div className="relative h-3 rounded-full overflow-hidden mt-3">
+                        <div className="absolute inset-0 flex">
+                          <div className="flex-1 bg-blue-400" />
+                          <div className="flex-1 bg-emerald-400" />
+                          <div className="flex-1 bg-amber-400" />
+                          <div className="flex-1 bg-orange-400" />
+                          <div className="flex-1 bg-red-400" />
+                        </div>
+                        <div
+                          className="absolute top-0 h-full w-1 bg-foreground rounded-full shadow-lg transition-all duration-300"
+                          style={{ left: `${bmiScalePos}%`, transform: 'translateX(-50%)' }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                        <span>15</span>
+                        <span>18.5</span>
+                        <span>25</span>
+                        <span>30</span>
+                        <span>40</span>
+                      </div>
+                      
+                      <StatusBadge status={getBMIStatus(currentBMI)} />
+                    </>
+                  )}
                 </GadgetCard>
               </div>
             </ScrollArea>
