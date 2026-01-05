@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import { AppLayout } from "./components/layout/AppLayout";
 import AppHome from "./pages/app/AppHome";
 import HealthAssistantPage from "./pages/app/HealthAssistantPage";
+import HealthCheckPage from "./pages/app/HealthCheckPage";
 import HealthCardPage from "./pages/app/HealthCardPage";
 import ReportPage from "./pages/app/ReportPage";
 import SettingsPage from "./pages/app/SettingsPage";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/app" element={<AppLayout />}>
               <Route index element={<AppHome />} />
               <Route path="health-assistant" element={<HealthAssistantPage />} />
+              <Route path="health-check" element={<HealthCheckPage />} />
               <Route path="health-card" element={<HealthCardPage />} />
               <Route path="report" element={<ReportPage />} />
               <Route path="wellness" element={<WellnessPage />} />
