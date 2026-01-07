@@ -27,6 +27,7 @@ import {
   Eye,
   Scale,
 } from 'lucide-react';
+import { MiniECG } from '@/components/demo/MiniECG';
 import { cn } from '@/lib/utils';
 import { InteractiveBodyMap } from '@/components/InteractiveBodyMap';
 import { RegionData } from '@/components/InteractiveBodyMap/types';
@@ -570,6 +571,11 @@ const HealthCheckPage = () => {
                     <span className="text-muted-foreground">breaths/min</span>
                   </div>
                 </GadgetCard>
+
+                {/* Mini ECG Monitor */}
+                <div className="p-4 bg-muted/30 rounded-xl border border-border/50 hover:border-border transition-colors">
+                  <MiniECG heartRate={vitals.heartRate || 72} />
+                </div>
 
                 {/* BMI Calculator */}
                 <GadgetCard

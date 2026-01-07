@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,53 @@ import { supabase } from "@/integrations/supabase/client";
 import AuthModal from "@/components/AuthModal";
 import founderHari from "@/assets/founder-hari.png";
 import founderMichelle from "@/assets/founder-michelle.png";
+
+// Animation variants for scroll reveal
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+};
+
+const fadeInLeft = {
+  hidden: { opacity: 0, x: -40 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.6 } }
+};
+
+const fadeInRight = {
+  hidden: { opacity: 0, x: 40 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.6 } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } }
+};
+
+// Section wrapper with scroll animation
+const AnimatedSection = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  
+  return (
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      variants={fadeInUp}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -87,13 +135,20 @@ const Landing = () => {
       {/* SECTION 1: HERO */}
       <section className="container mx-auto px-6 py-16 md:py-24">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8 animate-fade-in">
-            <Badge variant="outline" className="rounded-full px-4 py-2 border-primary/30 bg-primary/5">
-              <div className="h-2 w-2 rounded-full bg-primary animate-pulse mr-2" />
-              AI-Powered Healthcare Platform
-            </Badge>
+          <motion.div 
+            className="space-y-8"
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+          >
+            <motion.div variants={fadeInUp}>
+              <Badge variant="outline" className="rounded-full px-4 py-2 border-primary/30 bg-primary/5">
+                <div className="h-2 w-2 rounded-full bg-primary animate-pulse mr-2" />
+                AI-Powered Healthcare Platform
+              </Badge>
+            </motion.div>
             
-            <div className="space-y-6">
+            <motion.div className="space-y-6" variants={fadeInUp}>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
                 Your First Digital
                 <br />
@@ -107,9 +162,9 @@ const Landing = () => {
                 NeuLife combines smart health scanning and AI-driven analysis to help people
                 understand their health early and take the right next step.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <motion.div className="flex flex-col sm:flex-row gap-4" variants={fadeInUp}>
               <Button 
                 size="lg"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 shadow-lg hover:shadow-xl transition-all group"
@@ -128,11 +183,16 @@ const Landing = () => {
                 <Upload className="h-5 w-5 mr-2" />
                 Upload Medical Report
               </Button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Hero Visual */}
-          <div className="relative flex items-center justify-center">
+          <motion.div 
+            className="relative flex items-center justify-center"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+          >
             <div className="relative w-80 h-80 md:w-96 md:h-96">
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 blur-3xl animate-pulse" />
               <div className="absolute inset-8 rounded-full bg-gradient-to-tr from-primary/30 to-secondary/30 animate-spin" style={{ animationDuration: '30s' }} />
@@ -148,7 +208,7 @@ const Landing = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -613,64 +673,80 @@ const Landing = () => {
       </section>
 
       {/* SECTION 7: MEET THE FOUNDERS */}
-      <section className="container mx-auto px-6 py-16 md:py-24">
-        <div className="text-center mb-12 space-y-4">
-          <Badge variant="outline" className="rounded-full px-4 py-2 border-primary/30">
-            <Users className="h-4 w-4 mr-2" />
-            The Team
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-            Meet the Founders
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            A unique collaboration between technology and medicine
-          </p>
-        </div>
+      <AnimatedSection>
+        <section className="container mx-auto px-6 py-16 md:py-24">
+          <div className="text-center mb-12 space-y-4">
+            <Badge variant="outline" className="rounded-full px-4 py-2 border-primary/30">
+              <Users className="h-4 w-4 mr-2" />
+              The Team
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+              Meet the Founders
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              A unique collaboration between technology and medicine
+            </p>
+          </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* Founder 1: Hari */}
-          <Card className="p-8 bg-card border-border/50 hover:shadow-xl transition-shadow text-center">
-            <div className="mb-6">
-              <div className="h-40 w-40 rounded-full mx-auto overflow-hidden border-4 border-primary/20 shadow-xl">
-                <img 
-                  src={founderHari} 
-                  alt="Hari Vissa" 
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-1">Hari Vissa</h3>
-            <p className="text-sm text-primary font-medium mb-4">
-              Future Tech Engineer & AI Healthcare Developer
-            </p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Focused on building AI-powered healthcare systems that simplify diagnosis,
-              improve early intervention, and make medical guidance accessible to everyone.
-            </p>
-          </Card>
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Founder 1: Hari */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInLeft}
+            >
+              <Card className="p-8 bg-card border-border/50 hover:shadow-xl transition-shadow text-center h-full">
+                <div className="mb-6">
+                  <div className="h-44 w-44 rounded-full mx-auto overflow-hidden border-4 border-primary/20 shadow-xl">
+                    <img 
+                      src={founderHari} 
+                      alt="Hari Vissa" 
+                      className="h-full w-full object-cover object-[center_30%]"
+                    />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-1">Hari Vissa</h3>
+                <p className="text-sm text-primary font-medium mb-4">
+                  Future Tech Engineer & AI Healthcare Developer
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Focused on building AI-powered healthcare systems that simplify diagnosis,
+                  improve early intervention, and make medical guidance accessible to everyone.
+                </p>
+              </Card>
+            </motion.div>
 
-          {/* Founder 2: Michelle */}
-          <Card className="p-8 bg-card border-border/50 hover:shadow-xl transition-shadow text-center">
-            <div className="mb-6">
-              <div className="h-40 w-40 rounded-full mx-auto overflow-hidden border-4 border-secondary/20 shadow-xl">
-                <img 
-                  src={founderMichelle} 
-                  alt="Michelle Manda" 
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-1">Michelle Manda</h3>
-            <p className="text-sm text-secondary font-medium mb-4">
-              Medical Aspirant & Healthcare Visionary
-            </p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Driven by a passion for medicine and patient care, with a vision to combine
-              human empathy and technology to improve healthcare accessibility.
-            </p>
-          </Card>
-        </div>
-      </section>
+            {/* Founder 2: Michelle */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInRight}
+            >
+              <Card className="p-8 bg-card border-border/50 hover:shadow-xl transition-shadow text-center h-full">
+                <div className="mb-6">
+                  <div className="h-44 w-44 rounded-full mx-auto overflow-hidden border-4 border-secondary/20 shadow-xl">
+                    <img 
+                      src={founderMichelle} 
+                      alt="Michelle Manda" 
+                      className="h-full w-full object-cover object-[center_25%]"
+                    />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-1">Michelle Manda</h3>
+                <p className="text-sm text-secondary font-medium mb-4">
+                  Medical Aspirant & Healthcare Visionary
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Driven by a passion for medicine and patient care, with a vision to combine
+                  human empathy and technology to improve healthcare accessibility.
+                </p>
+              </Card>
+            </motion.div>
+          </div>
+        </section>
+      </AnimatedSection>
 
       {/* SECTION 8: FUTURE ROADMAP */}
       <section className="bg-muted/30 py-16 md:py-24">
