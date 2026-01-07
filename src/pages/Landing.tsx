@@ -5,12 +5,15 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Play, Menu, Sparkles, Thermometer, Heart, Activity, Droplets, 
   Wind, Brain, Upload, FileText, TrendingUp, Users, Shield, 
   Stethoscope, AlertTriangle, CheckCircle2, Clock, Zap, Globe,
-  Building2, Phone, ArrowRight, ChevronRight
+  Building2, Phone, ArrowRight, ChevronRight, Mail, MapPin, 
+  Calendar, QrCode, UserCheck
 } from "lucide-react";
+import QRCode from "qrcode";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -74,6 +77,9 @@ const Landing = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  const [userProfile, setUserProfile] = useState<{ name: string; email: string } | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+
   // Demo scanner states
   const [temperature, setTemperature] = useState([98.6]);
   const [systolic, setSystolic] = useState("");
@@ -83,13 +89,59 @@ const Landing = () => {
   const [bloodSugar, setBloodSugar] = useState("");
   const [respiratoryRate, setRespiratoryRate] = useState("");
 
+  // Contact form state
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+
   useEffect(() => {
+    const fetchUserAndGenerateQR = async (session: any) => {
+      if (session?.user) {
+        // Fetch profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name, email')
+          .eq('id', session.user.id)
+          .single();
+        
+        const userName = profile?.name || session.user.email?.split('@')[0] || 'User';
+        const userEmail = profile?.email || session.user.email || '';
+        setUserProfile({ name: userName, email: userEmail });
+
+        // Generate QR code
+        const qrData = JSON.stringify({
+          platform: "NeuLife",
+          verified: true,
+          name: userName,
+          email: userEmail,
+          role: "User",
+          message: "Verified NeuLife Digital Profile"
+        });
+        
+        try {
+          const qrUrl = await QRCode.toDataURL(qrData, {
+            width: 200,
+            margin: 2,
+            color: { dark: '#000000', light: '#ffffff' }
+          });
+          setQrCodeUrl(qrUrl);
+        } catch (err) {
+          console.error('QR generation error:', err);
+        }
+      } else {
+        setUserProfile(null);
+        setQrCodeUrl("");
+      }
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthenticated(!!session);
+      fetchUserAndGenerateQR(session);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
+      fetchUserAndGenerateQR(session);
     });
 
     return () => subscription.unsubscribe();
@@ -123,6 +175,29 @@ const Landing = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* QR Code for logged-in users */}
+            {isAuthenticated && qrCodeUrl && (
+              <div className="relative group">
+                <button className="p-2 rounded-full hover:bg-muted transition-colors">
+                  <QrCode className="h-5 w-5 text-primary" />
+                </button>
+                <div className="absolute right-0 top-full mt-2 p-4 bg-card border border-border rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-50 min-w-[220px]">
+                  <div className="text-center space-y-3">
+                    <div className="p-2 bg-white rounded-lg inline-block shadow-inner">
+                      <img src={qrCodeUrl} alt="Digital Health ID" className="w-32 h-32" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-foreground flex items-center justify-center gap-1">
+                        <UserCheck className="h-3 w-3 text-green-500" />
+                        {userProfile?.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">NeuLife Digital Profile</p>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Scan to View Profile</p>
+                  </div>
+                </div>
+              </div>
+            )}
             <ThemeToggle />
             <LanguageSelector />
             <button className="md:hidden">
@@ -697,13 +772,17 @@ const Landing = () => {
               variants={fadeInLeft}
             >
               <Card className="p-8 bg-card border-border/50 hover:shadow-xl transition-shadow text-center h-full">
-                <div className="mb-6">
-                  <div className="h-44 w-44 rounded-full mx-auto overflow-hidden border-4 border-primary/20 shadow-xl">
-                    <img 
-                      src={founderHari} 
-                      alt="Hari Vissa" 
-                      className="h-full w-full object-cover object-[center_30%]"
-                    />
+                <div className="mb-6 flex justify-center">
+                  {/* Square container with aspect-ratio 1:1, minimum 160px */}
+                  <div className="relative w-40 h-40 md:w-44 md:h-44">
+                    <div className="absolute inset-0 rounded-full overflow-hidden border-4 border-primary/20 shadow-xl bg-muted">
+                      <img 
+                        src={founderHari} 
+                        alt="Hari Vissa" 
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: '50% 30%' }}
+                      />
+                    </div>
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-1">Hari Vissa</h3>
@@ -725,13 +804,17 @@ const Landing = () => {
               variants={fadeInRight}
             >
               <Card className="p-8 bg-card border-border/50 hover:shadow-xl transition-shadow text-center h-full">
-                <div className="mb-6">
-                  <div className="h-44 w-44 rounded-full mx-auto overflow-hidden border-4 border-secondary/20 shadow-xl">
-                    <img 
-                      src={founderMichelle} 
-                      alt="Michelle Manda" 
-                      className="h-full w-full object-cover object-[center_25%]"
-                    />
+                <div className="mb-6 flex justify-center">
+                  {/* Square container with aspect-ratio 1:1, minimum 160px */}
+                  <div className="relative w-40 h-40 md:w-44 md:h-44">
+                    <div className="absolute inset-0 rounded-full overflow-hidden border-4 border-secondary/20 shadow-xl bg-muted">
+                      <img 
+                        src={founderMichelle} 
+                        alt="Michelle Manda" 
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: '50% 25%' }}
+                      />
+                    </div>
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-1">Michelle Manda</h3>
@@ -803,6 +886,151 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
+      {/* SECTION 9: CONTACT US */}
+      <AnimatedSection>
+        <section className="py-16 md:py-24 bg-gradient-to-b from-background to-primary/5">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-12 space-y-4">
+              <Badge variant="outline" className="rounded-full px-4 py-2 border-primary/30 bg-primary/5">
+                <Mail className="h-4 w-4 mr-2" />
+                Get In Touch
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                Contact NeuLife
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Reach out for healthcare innovation, collaboration, or medical technology discussions.
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+              {/* Contact Info */}
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInLeft}
+                className="space-y-6"
+              >
+                <Card className="p-6 bg-card border-border/50 hover:shadow-lg transition-shadow">
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Mail className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Email Us</h3>
+                      <p className="text-muted-foreground text-sm">contact@neulife.in</p>
+                      <p className="text-xs text-muted-foreground mt-1">We'll respond within 24 hours</p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-6 bg-card border-border/50 hover:shadow-lg transition-shadow">
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="h-6 w-6 text-secondary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Location</h3>
+                      <p className="text-muted-foreground text-sm">India (Remote-first)</p>
+                      <p className="text-xs text-muted-foreground mt-1">Serving globally</p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-6 bg-card border-border/50 hover:shadow-lg transition-shadow">
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                      <Calendar className="h-6 w-6 text-green-500" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Availability</h3>
+                      <p className="text-muted-foreground text-sm">Open for collaboration</p>
+                      <p className="text-xs text-muted-foreground mt-1">Healthcare partners welcome</p>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Medical theme decorative element */}
+                <div className="hidden lg:flex items-center justify-center pt-4">
+                  <div className="flex items-center gap-3 text-muted-foreground">
+                    <Stethoscope className="h-8 w-8 text-primary/40" />
+                    <div className="h-px w-16 bg-border" />
+                    <Heart className="h-6 w-6 text-secondary/40" />
+                    <div className="h-px w-16 bg-border" />
+                    <Shield className="h-8 w-8 text-primary/40" />
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Contact Form */}
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInRight}
+              >
+                <Card className="p-8 bg-card border-border/50 shadow-xl">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Stethoscope className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Send a Message</h3>
+                      <p className="text-xs text-muted-foreground">We'd love to hear from you</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-2 block">Name</label>
+                      <Input 
+                        placeholder="Your full name"
+                        value={contactName}
+                        onChange={(e) => setContactName(e.target.value)}
+                        className="bg-background"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-2 block">Email</label>
+                      <Input 
+                        type="email"
+                        placeholder="your@email.com"
+                        value={contactEmail}
+                        onChange={(e) => setContactEmail(e.target.value)}
+                        className="bg-background"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-2 block">Message</label>
+                      <Textarea 
+                        placeholder="Tell us about your inquiry..."
+                        value={contactMessage}
+                        onChange={(e) => setContactMessage(e.target.value)}
+                        className="bg-background min-h-[120px] resize-none"
+                      />
+                    </div>
+                    <Button 
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg"
+                      onClick={() => {
+                        // Demo only - show success message
+                        alert('Thank you for your message! This is a demo feature.');
+                        setContactName('');
+                        setContactEmail('');
+                        setContactMessage('');
+                      }}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Send Message
+                    </Button>
+                  </div>
+                </Card>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
 
       {/* CTA Section */}
       <section className="container mx-auto px-6 py-16 md:py-24">
