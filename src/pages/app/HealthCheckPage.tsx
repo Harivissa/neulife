@@ -7,7 +7,10 @@ import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
+import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Activity,
   Thermometer,
@@ -26,6 +29,10 @@ import {
   Layers,
   Eye,
   Scale,
+  AlertTriangle,
+  FileText,
+  ShieldCheck,
+  HelpCircle,
 } from 'lucide-react';
 import { MiniECG } from '@/components/demo/MiniECG';
 import { cn } from '@/lib/utils';
@@ -35,6 +42,7 @@ import { useHealthStorage } from '@/hooks/useHealthStorage';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface VitalReadings {
   temperature?: number;
@@ -55,7 +63,18 @@ interface TriageResult {
   advice: string[];
 }
 
+// What affects each reading
+const readingFactors: Record<string, string[]> = {
+  temperature: ['Stress', 'Time of day', 'Physical activity', 'Recent food/drinks', 'Environment'],
+  bp: ['Stress', 'Caffeine', 'Physical activity', 'Full bladder', 'Posture'],
+  heartRate: ['Stress', 'Caffeine', 'Physical activity', 'Medication', 'Sleep quality'],
+  spo2: ['Altitude', 'Cold hands', 'Nail polish', 'Movement', 'Breathing pattern'],
+  glucose: ['Recent meal', 'Stress', 'Medication', 'Physical activity', 'Sleep'],
+  bmi: ['Muscle mass', 'Age', 'Bone density', 'Hydration'],
+};
+
 const HealthCheckPage = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { addVital, addSymptom } = useHealthStorage();
   
@@ -66,52 +85,53 @@ const HealthCheckPage = () => {
   const [vitals, setVitals] = useState<VitalReadings>({});
   const [isGenerating, setIsGenerating] = useState(false);
   const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
+  const [simpleTone, setSimpleTone] = useState(false);
 
   // Temperature helpers
   const getTemperatureStatus = (temp?: number) => {
     if (!temp) return null;
-    if (temp < 97) return { label: 'Low', color: 'text-blue-400', hint: 'Below normal - could be due to cold exposure or early morning measurement' };
-    if (temp <= 99) return { label: 'Normal', color: 'text-emerald-400', hint: 'Normal body temperature range' };
-    if (temp <= 100.4) return { label: 'Mild Fever', color: 'text-amber-400', hint: 'Slightly elevated - monitor and rest' };
-    if (temp <= 103) return { label: 'Fever', color: 'text-orange-400', hint: 'Fever present - consider medication and hydration' };
-    return { label: 'High Fever', color: 'text-red-400', hint: 'High fever - seek medical attention if persistent' };
+    if (temp < 97) return { label: simpleTone ? t('simple.low', 'A bit cold') : t('low'), color: 'text-blue-400', hint: 'Below normal - could be due to cold exposure or early morning measurement' };
+    if (temp <= 99) return { label: simpleTone ? t('simple.normal', 'Looking good!') : t('normal'), color: 'text-emerald-400', hint: 'Normal body temperature range' };
+    if (temp <= 100.4) return { label: simpleTone ? 'Slightly warm' : t('mildFever'), color: 'text-amber-400', hint: 'Slightly elevated - monitor and rest' };
+    if (temp <= 103) return { label: simpleTone ? 'You have a fever' : t('fever'), color: 'text-orange-400', hint: 'Fever present - consider medication and hydration' };
+    return { label: simpleTone ? 'High fever - please see a doctor' : t('highFever'), color: 'text-red-400', hint: 'High fever - seek medical attention if persistent' };
   };
 
   // BP helpers
   const getBPStatus = (sys?: number, dia?: number) => {
     if (!sys || !dia) return null;
-    if (sys < 90 || dia < 60) return { label: 'Low', color: 'text-blue-400', hint: 'Blood pressure is low - may cause dizziness' };
-    if (sys <= 120 && dia <= 80) return { label: 'Normal', color: 'text-emerald-400', hint: 'Healthy blood pressure range' };
-    if (sys <= 129 && dia <= 80) return { label: 'Elevated', color: 'text-amber-400', hint: 'Slightly elevated - lifestyle changes recommended' };
-    if (sys <= 139 || dia <= 89) return { label: 'High Stage 1', color: 'text-orange-400', hint: 'Stage 1 hypertension - consult a doctor' };
-    return { label: 'High', color: 'text-red-400', hint: 'High blood pressure - medical attention recommended' };
+    if (sys < 90 || dia < 60) return { label: simpleTone ? 'Your BP is low' : t('low'), color: 'text-blue-400', hint: 'Blood pressure is low - may cause dizziness' };
+    if (sys <= 120 && dia <= 80) return { label: simpleTone ? 'Your BP looks good!' : t('normal'), color: 'text-emerald-400', hint: 'Healthy blood pressure range' };
+    if (sys <= 129 && dia <= 80) return { label: simpleTone ? 'BP is a little high' : t('elevated'), color: 'text-amber-400', hint: 'Slightly elevated - lifestyle changes recommended' };
+    if (sys <= 139 || dia <= 89) return { label: simpleTone ? 'BP is higher than usual' : 'High Stage 1', color: 'text-orange-400', hint: 'Stage 1 hypertension - consult a doctor' };
+    return { label: simpleTone ? 'BP is quite high - see a doctor' : t('high'), color: 'text-red-400', hint: 'High blood pressure - medical attention recommended' };
   };
 
   // Heart rate helpers
   const getHRStatus = (hr?: number) => {
     if (!hr) return null;
-    if (hr < 60) return { label: 'Low', color: 'text-blue-400', hint: 'Lower than typical - could be normal for athletes' };
-    if (hr <= 100) return { label: 'Normal', color: 'text-emerald-400', hint: 'Normal resting heart rate' };
-    if (hr <= 120) return { label: 'Elevated', color: 'text-amber-400', hint: 'Elevated - could be due to activity or stress' };
-    return { label: 'High', color: 'text-red-400', hint: 'High heart rate - rest and monitor' };
+    if (hr < 60) return { label: simpleTone ? 'Heart is beating slowly' : t('low'), color: 'text-blue-400', hint: 'Lower than typical - could be normal for athletes' };
+    if (hr <= 100) return { label: simpleTone ? 'Heart rate is good!' : t('normal'), color: 'text-emerald-400', hint: 'Normal resting heart rate' };
+    if (hr <= 120) return { label: simpleTone ? 'Heart is beating faster' : t('elevated'), color: 'text-amber-400', hint: 'Elevated - could be due to activity or stress' };
+    return { label: simpleTone ? 'Heart is racing - try to rest' : t('high'), color: 'text-red-400', hint: 'High heart rate - rest and monitor' };
   };
 
   // SpO2 helpers
   const getSpO2Status = (spo2?: number) => {
     if (!spo2) return null;
-    if (spo2 >= 95) return { label: 'Normal', color: 'text-emerald-400', hint: 'Healthy oxygen levels' };
-    if (spo2 >= 90) return { label: 'Low', color: 'text-amber-400', hint: 'Below normal - monitor closely' };
-    return { label: 'Critical', color: 'text-red-400', hint: 'Very low - seek immediate medical attention' };
+    if (spo2 >= 95) return { label: simpleTone ? 'Oxygen level is great!' : t('normal'), color: 'text-emerald-400', hint: 'Healthy oxygen levels' };
+    if (spo2 >= 90) return { label: simpleTone ? 'Oxygen is a bit low' : t('low'), color: 'text-amber-400', hint: 'Below normal - monitor closely' };
+    return { label: simpleTone ? 'Oxygen very low - get help now' : t('critical'), color: 'text-red-400', hint: 'Very low - seek immediate medical attention' };
   };
 
   // Glucose helpers
   const getGlucoseStatus = (glucose?: number) => {
     if (!glucose) return null;
-    if (glucose < 70) return { label: 'Low', color: 'text-blue-400', hint: 'Low blood sugar - eat something sweet' };
-    if (glucose <= 100) return { label: 'Normal (Fasting)', color: 'text-emerald-400', hint: 'Normal fasting range' };
-    if (glucose <= 125) return { label: 'Prediabetes Range', color: 'text-amber-400', hint: 'Slightly elevated - monitor diet' };
-    if (glucose <= 180) return { label: 'High (Post-meal)', color: 'text-orange-400', hint: 'Can be normal after eating' };
-    return { label: 'Very High', color: 'text-red-400', hint: 'High blood sugar - consult a doctor' };
+    if (glucose < 70) return { label: simpleTone ? 'Blood sugar is low - eat something' : t('low'), color: 'text-blue-400', hint: 'Low blood sugar - eat something sweet' };
+    if (glucose <= 100) return { label: simpleTone ? 'Blood sugar is normal!' : 'Normal (Fasting)', color: 'text-emerald-400', hint: 'Normal fasting range' };
+    if (glucose <= 125) return { label: simpleTone ? 'Sugar is slightly high' : 'Prediabetes Range', color: 'text-amber-400', hint: 'Slightly elevated - monitor diet' };
+    if (glucose <= 180) return { label: simpleTone ? 'Sugar is high (may be after food)' : 'High (Post-meal)', color: 'text-orange-400', hint: 'Can be normal after eating' };
+    return { label: simpleTone ? 'Sugar is very high - see a doctor' : t('veryHigh'), color: 'text-red-400', hint: 'High blood sugar - consult a doctor' };
   };
 
   // BMI calculation and status
@@ -122,15 +142,51 @@ const HealthCheckPage = () => {
 
   const getBMIStatus = (bmi: number | null) => {
     if (!bmi) return null;
-    if (bmi < 18.5) return { label: 'Underweight', color: 'text-blue-400', hint: 'Below healthy weight range' };
-    if (bmi < 25) return { label: 'Normal', color: 'text-emerald-400', hint: 'Healthy weight range' };
-    if (bmi < 30) return { label: 'Overweight', color: 'text-amber-400', hint: 'Above healthy weight range' };
-    if (bmi < 35) return { label: 'Obese Class I', color: 'text-orange-400', hint: 'Consider lifestyle changes' };
-    return { label: 'Obese Class II+', color: 'text-red-400', hint: 'Health risks - consult a doctor' };
+    if (bmi < 18.5) return { label: simpleTone ? 'You may be underweight' : t('underweight'), color: 'text-blue-400', hint: 'Below healthy weight range' };
+    if (bmi < 25) return { label: simpleTone ? 'Weight is healthy!' : t('normal'), color: 'text-emerald-400', hint: 'Healthy weight range' };
+    if (bmi < 30) return { label: simpleTone ? 'Weight is a bit high' : t('overweight'), color: 'text-amber-400', hint: 'Above healthy weight range' };
+    if (bmi < 35) return { label: simpleTone ? 'Weight needs attention' : 'Obese Class I', color: 'text-orange-400', hint: 'Consider lifestyle changes' };
+    return { label: simpleTone ? 'Weight is high - talk to a doctor' : 'Obese Class II+', color: 'text-red-400', hint: 'Health risks - consult a doctor' };
   };
 
   const currentBMI = calculateBMI(vitals.bmiWeight, vitals.bmiHeight);
   const bmiScalePos = currentBMI ? Math.min(100, Math.max(0, ((currentBMI - 15) / 25) * 100)) : 50;
+
+  // Assessment confidence calculation
+  const assessmentConfidence = useMemo(() => {
+    let confidence = 0;
+    
+    // Symptom text adds 20%
+    if (symptoms.trim().length > 10) confidence += 20;
+    else if (symptoms.trim().length > 0) confidence += 10;
+    
+    // Body map selection adds 20%
+    if (selectedRegion) confidence += 20;
+    
+    // Each vital adds up to 60% total (10% each for 6 vitals)
+    if (vitals.temperature) confidence += 10;
+    if (vitals.systolic && vitals.diastolic) confidence += 10;
+    if (vitals.heartRate) confidence += 10;
+    if (vitals.spo2) confidence += 10;
+    if (vitals.glucose) confidence += 10;
+    if (currentBMI) confidence += 10;
+    
+    return Math.min(100, confidence);
+  }, [symptoms, selectedRegion, vitals, currentBMI]);
+
+  // Recheck suggestion logic
+  const showRecheckSuggestion = useMemo(() => {
+    const temp = vitals.temperature;
+    const sys = vitals.systolic;
+    const dia = vitals.diastolic;
+    const glucose = vitals.glucose;
+    
+    const borderlineTemp = temp && temp >= 99 && temp <= 100.4;
+    const borderlineBP = sys && dia && ((sys >= 120 && sys <= 139) || (dia >= 80 && dia <= 89));
+    const borderlineGlucose = glucose && glucose >= 100 && glucose <= 125;
+    
+    return borderlineTemp || borderlineBP || borderlineGlucose;
+  }, [vitals]);
 
   // Live summary generation
   const liveSummary = useMemo(() => {
@@ -175,7 +231,33 @@ const HealthCheckPage = () => {
     }
 
     return items;
-  }, [symptoms, selectedRegion, painSeverity, vitals, currentBMI]);
+  }, [symptoms, selectedRegion, painSeverity, vitals, currentBMI, simpleTone]);
+
+  // Doctor Summary data
+  const doctorSummary = useMemo(() => {
+    const summary: { label: string; value: string }[] = [];
+    
+    if (symptoms.trim()) {
+      summary.push({ label: t('mainSymptom'), value: symptoms.trim().substring(0, 50) + (symptoms.length > 50 ? '...' : '') });
+    }
+    
+    if (selectedRegion) {
+      summary.push({ label: t('bodyAreaAffected'), value: `${selectedRegion.regionLabel} (${painSeverity}/10)` });
+    }
+    
+    const readings: string[] = [];
+    if (vitals.temperature) readings.push(`Temp: ${vitals.temperature}°F`);
+    if (vitals.systolic && vitals.diastolic) readings.push(`BP: ${vitals.systolic}/${vitals.diastolic}`);
+    if (vitals.heartRate) readings.push(`HR: ${vitals.heartRate}`);
+    if (vitals.spo2) readings.push(`SpO2: ${vitals.spo2}%`);
+    if (vitals.glucose) readings.push(`Sugar: ${vitals.glucose}`);
+    
+    if (readings.length > 0) {
+      summary.push({ label: t('keyReadings'), value: readings.join(', ') });
+    }
+    
+    return summary;
+  }, [symptoms, selectedRegion, painSeverity, vitals, t]);
 
   const hasAnyData = symptoms.trim() || selectedRegion || Object.keys(vitals).length > 0;
 
@@ -258,10 +340,10 @@ const HealthCheckPage = () => {
       }
 
       const levelTitles = {
-        green: 'Likely Safe',
-        yellow: 'Monitor & Rest',
-        orange: 'Consult Doctor Soon',
-        red: 'Seek Urgent Care',
+        green: t('likelySafe'),
+        yellow: t('monitorRest'),
+        orange: t('consultSoon'),
+        red: t('urgentCare'),
       };
 
       setTriageResult({
@@ -269,9 +351,9 @@ const HealthCheckPage = () => {
         title: levelTitles[level],
         explanation: response,
         advice: [
-          'This is guidance, not a medical diagnosis.',
-          'Readings can be affected by stress, activity, food, and sleep.',
-          'If symptoms worsen, please consult a healthcare professional.',
+          t('notDiagnosis'),
+          t('readingsAffected'),
+          t('ifWorsens'),
         ],
       });
 
@@ -282,6 +364,7 @@ const HealthCheckPage = () => {
           input_data: inputData as any,
           ai_result: { result: response, level } as any,
           triage_level: level,
+          confidence: assessmentConfidence,
           easy_text: response,
         }]);
       }
@@ -316,15 +399,31 @@ const HealthCheckPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Health Check</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground">{t('healthCheck')}</h1>
             <p className="text-muted-foreground mt-1">
-              Describe your symptoms, mark pain areas, and enter device readings for a comprehensive assessment
+              {t('healthCheckSubtitle')}
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={resetAll} className="gap-2">
-            <RotateCcw className="h-4 w-4" />
-            Reset All
-          </Button>
+          <div className="flex items-center gap-4">
+            {/* Tone Selector */}
+            <div className="flex items-center gap-2 bg-muted/50 px-3 py-2 rounded-lg">
+              <Label htmlFor="tone-toggle" className="text-sm text-muted-foreground">
+                {t('toneNormal')}
+              </Label>
+              <Switch
+                id="tone-toggle"
+                checked={simpleTone}
+                onCheckedChange={setSimpleTone}
+              />
+              <Label htmlFor="tone-toggle" className="text-sm font-medium">
+                {t('toneSimple')}
+              </Label>
+            </div>
+            <Button variant="outline" size="sm" onClick={resetAll} className="gap-2">
+              <RotateCcw className="h-4 w-4" />
+              {t('resetAll')}
+            </Button>
+          </div>
         </div>
 
         {/* Main 3-column layout */}
@@ -335,17 +434,18 @@ const HealthCheckPage = () => {
               <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <Stethoscope className="h-5 w-5 text-primary" />
               </div>
-              <div>
-                <h2 className="font-semibold text-foreground">Symptoms & Pain</h2>
-                <p className="text-xs text-muted-foreground">Describe what you're feeling</p>
+              <div className="flex-1">
+                <h2 className="font-semibold text-foreground">{t('symptomsAndPain')}</h2>
+                <p className="text-xs text-muted-foreground">{t('describeFeeling')}</p>
               </div>
+              <InfoTooltip text={t('gadgetInfoText')} />
             </div>
 
             {/* Symptom Input */}
             <div className="space-y-2">
-              <Label>What are you experiencing?</Label>
+              <Label>{t('whatExperiencing')}</Label>
               <Textarea
-                placeholder="Tell us what you're feeling (e.g., fever, headache, chest pain, fatigue...)"
+                placeholder={t('symptomPlaceholder')}
                 value={symptoms}
                 onChange={(e) => setSymptoms(e.target.value)}
                 className="min-h-[100px] resize-none"
@@ -356,7 +456,7 @@ const HealthCheckPage = () => {
             {selectedRegion && (
               <div className="space-y-3 p-3 bg-muted/30 rounded-lg">
                 <div className="flex items-center justify-between">
-                  <Label>Pain Severity</Label>
+                  <Label>{t('painSeverity')}</Label>
                   <Badge variant="outline" className="font-mono">{painSeverity}/10</Badge>
                 </div>
                 <Slider
@@ -367,8 +467,8 @@ const HealthCheckPage = () => {
                   step={1}
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Mild</span>
-                  <span>Severe</span>
+                  <span>{t('mild')}</span>
+                  <span>{t('severe')}</span>
                 </div>
               </div>
             )}
@@ -390,8 +490,8 @@ const HealthCheckPage = () => {
                 <Activity className="h-5 w-5 text-cyan-400" />
               </div>
               <div>
-                <h2 className="font-semibold text-foreground">Electronic Health Scan</h2>
-                <p className="text-xs text-muted-foreground">Enter readings from your devices</p>
+                <h2 className="font-semibold text-foreground">{t('electronicHealthScan')}</h2>
+                <p className="text-xs text-muted-foreground">{t('enterReadings')}</p>
               </div>
             </div>
 
@@ -400,9 +500,10 @@ const HealthCheckPage = () => {
                 {/* Thermometer */}
                 <GadgetCard
                   icon={<Thermometer className="h-5 w-5 text-orange-400" />}
-                  title="Thermometer"
-                  hint="Body temperature helps detect fever or infection"
+                  title={t('thermometer')}
+                  hint={t('thermometerHint')}
                   iconBg="bg-orange-500/20"
+                  factors={readingFactors.temperature}
                 >
                   <div className="flex items-center gap-3">
                     <Input
@@ -428,13 +529,14 @@ const HealthCheckPage = () => {
                 {/* BP Machine */}
                 <GadgetCard
                   icon={<Gauge className="h-5 w-5 text-rose-400" />}
-                  title="Blood Pressure"
-                  hint="BP shows how hard your heart is working"
+                  title={t('bloodPressure')}
+                  hint={t('bpHint')}
                   iconBg="bg-rose-500/20"
+                  factors={readingFactors.bp}
                 >
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <Label className="text-xs">Systolic</Label>
+                      <Label className="text-xs">{t('systolic')}</Label>
                       <Input
                         type="number"
                         min="60"
@@ -446,7 +548,7 @@ const HealthCheckPage = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-xs">Diastolic</Label>
+                      <Label className="text-xs">{t('diastolic')}</Label>
                       <Input
                         type="number"
                         min="40"
@@ -471,9 +573,10 @@ const HealthCheckPage = () => {
                 {/* Heart Rate */}
                 <GadgetCard
                   icon={<Heart className="h-5 w-5 text-rose-400" />}
-                  title="Heart Rate"
-                  hint="Your heart rhythm can indicate stress or health issues"
+                  title={t('heartRate')}
+                  hint={t('heartRateHint')}
                   iconBg="bg-rose-500/20"
+                  factors={readingFactors.heartRate}
                 >
                   <div className="space-y-3">
                     <Slider
@@ -499,9 +602,10 @@ const HealthCheckPage = () => {
                 {/* Oximeter */}
                 <GadgetCard
                   icon={<Droplets className="h-5 w-5 text-cyan-400" />}
-                  title="Oxygen Level (SpO2)"
-                  hint="Measures oxygen saturation in your blood"
+                  title={t('oxygenLevel')}
+                  hint={t('oxygenHint')}
                   iconBg="bg-cyan-500/20"
+                  factors={readingFactors.spo2}
                 >
                   <div className="space-y-3">
                     <Slider
@@ -527,9 +631,10 @@ const HealthCheckPage = () => {
                 {/* Glucose */}
                 <GadgetCard
                   icon={<Droplet className="h-5 w-5 text-purple-400" />}
-                  title="Blood Sugar"
-                  hint="Blood glucose levels vary based on meals and activity"
+                  title={t('bloodSugar')}
+                  hint={t('bloodSugarHint')}
                   iconBg="bg-purple-500/20"
+                  factors={readingFactors.glucose}
                 >
                   <div className="flex items-center gap-3">
                     <Input
@@ -554,8 +659,8 @@ const HealthCheckPage = () => {
                 {/* Respiratory Rate */}
                 <GadgetCard
                   icon={<Wind className="h-5 w-5 text-sky-400" />}
-                  title="Respiratory Rate"
-                  hint="Breathing rate can indicate respiratory issues"
+                  title={t('respiratoryRate')}
+                  hint={t('respiratoryHint')}
                   iconBg="bg-sky-500/20"
                 >
                   <div className="flex items-center gap-3">
@@ -580,13 +685,14 @@ const HealthCheckPage = () => {
                 {/* BMI Calculator */}
                 <GadgetCard
                   icon={<Scale className="h-5 w-5 text-emerald-400" />}
-                  title="BMI Calculator"
-                  hint="Body Mass Index indicates if your weight is healthy for your height"
+                  title={t('bmiCalculator')}
+                  hint={t('bmiHint')}
                   iconBg="bg-emerald-500/20"
+                  factors={readingFactors.bmi}
                 >
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <Label className="text-xs">Weight (kg)</Label>
+                      <Label className="text-xs">{t('weight')}</Label>
                       <Input
                         type="number"
                         min="20"
@@ -598,7 +704,7 @@ const HealthCheckPage = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-xs">Height (cm)</Label>
+                      <Label className="text-xs">{t('height')}</Label>
                       <Input
                         type="number"
                         min="100"
@@ -657,12 +763,37 @@ const HealthCheckPage = () => {
                 <Activity className="h-5 w-5 text-emerald-400" />
               </div>
               <div>
-                <h2 className="font-semibold text-foreground">Live Health Summary</h2>
-                <p className="text-xs text-muted-foreground">Real-time analysis of your inputs</p>
+                <h2 className="font-semibold text-foreground">{t('liveHealthSummary')}</h2>
+                <p className="text-xs text-muted-foreground">{t('realTimeAnalysis')}</p>
               </div>
             </div>
 
-            <ScrollArea className="h-[300px]">
+            {/* Assessment Confidence Meter */}
+            <div className="p-3 bg-muted/30 rounded-lg space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">{t('assessmentConfidence')}</span>
+                <span className="text-sm font-mono font-bold text-primary">{assessmentConfidence}%</span>
+              </div>
+              <Progress value={assessmentConfidence} className="h-2" />
+              <p className="text-xs text-muted-foreground">
+                {assessmentConfidence < 30 && 'Add more symptoms or readings for better accuracy'}
+                {assessmentConfidence >= 30 && assessmentConfidence < 60 && 'Good start! More data helps'}
+                {assessmentConfidence >= 60 && assessmentConfidence < 80 && 'Good amount of data collected'}
+                {assessmentConfidence >= 80 && 'Excellent! Comprehensive data for assessment'}
+              </p>
+            </div>
+
+            {/* Recheck Suggestion */}
+            {showRecheckSuggestion && (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  {t('recheckSuggestion')}
+                </p>
+              </div>
+            )}
+
+            <ScrollArea className="h-[200px]">
               {liveSummary.length > 0 ? (
                 <div className="space-y-3">
                   {liveSummary.map((item, index) => (
@@ -674,11 +805,29 @@ const HealthCheckPage = () => {
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                   <AlertCircle className="h-8 w-8 mb-2 opacity-50" />
-                  <p>No data entered yet</p>
-                  <p className="text-xs mt-1">Start by describing symptoms or entering readings</p>
+                  <p>{t('noDataYet')}</p>
+                  <p className="text-xs mt-1">{t('startByDescribing')}</p>
                 </div>
               )}
             </ScrollArea>
+
+            {/* Doctor Summary Box */}
+            {doctorSummary.length > 0 && (
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
+                <div className="flex items-center gap-2 text-primary font-medium">
+                  <FileText className="h-4 w-4" />
+                  <span>{t('doctorSummary')}</span>
+                </div>
+                <div className="space-y-1 text-sm">
+                  {doctorSummary.map((item, index) => (
+                    <div key={index} className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>{item.label}:</strong> {item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="border-t pt-4">
               <Button
@@ -690,12 +839,12 @@ const HealthCheckPage = () => {
                 {isGenerating ? (
                   <>
                     <Activity className="h-5 w-5 animate-spin" />
-                    Analyzing...
+                    {t('analyzing')}
                   </>
                 ) : (
                   <>
                     <Stethoscope className="h-5 w-5" />
-                    Generate Full Triage Assessment
+                    {t('generateTriage')}
                   </>
                 )}
               </Button>
@@ -728,10 +877,30 @@ const HealthCheckPage = () => {
             )}
           </Card>
         </div>
+
+        {/* Trust Banner */}
+        <div className="flex items-center justify-center gap-2 py-4 px-6 bg-primary/5 border border-primary/20 rounded-lg">
+          <ShieldCheck className="h-5 w-5 text-primary" />
+          <p className="text-sm text-muted-foreground">{t('trustBanner')}</p>
+        </div>
       </div>
     </div>
   );
 };
+
+// Info Tooltip Component
+const InfoTooltip = ({ text }: { text: string }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <button className="p-1 rounded-full hover:bg-muted transition-colors">
+        <Info className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+      </button>
+    </TooltipTrigger>
+    <TooltipContent side="left" className="max-w-[200px]">
+      <p className="text-xs">{text}</p>
+    </TooltipContent>
+  </Tooltip>
+);
 
 // Gadget Card Component
 const GadgetCard = ({ 
@@ -739,34 +908,65 @@ const GadgetCard = ({
   title, 
   hint, 
   iconBg, 
+  factors,
   children 
 }: { 
   icon: React.ReactNode; 
   title: string; 
   hint: string; 
   iconBg: string; 
+  factors?: string[];
   children: React.ReactNode;
-}) => (
-  <div className="p-4 bg-muted/30 rounded-xl space-y-3 border border-border/50 hover:border-border transition-colors">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className={cn('h-9 w-9 rounded-lg flex items-center justify-center', iconBg)}>
-          {icon}
+}) => {
+  const { t } = useTranslation();
+  
+  return (
+    <div className="p-4 bg-muted/30 rounded-xl space-y-3 border border-border/50 hover:border-border transition-colors">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className={cn('h-9 w-9 rounded-lg flex items-center justify-center', iconBg)}>
+            {icon}
+          </div>
+          <span className="font-medium text-foreground">{title}</span>
         </div>
-        <span className="font-medium text-foreground">{title}</span>
+        <div className="flex items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button className="p-1 rounded-full hover:bg-muted transition-colors">
+                <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-[200px]">
+              <p className="text-xs">{hint}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
-      <Tooltip>
-        <TooltipTrigger>
-          <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
-        </TooltipTrigger>
-        <TooltipContent side="left" className="max-w-[200px]">
-          <p className="text-xs">{hint}</p>
-        </TooltipContent>
-      </Tooltip>
+      {children}
+      
+      {/* What affects this reading */}
+      {factors && factors.length > 0 && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <HelpCircle className="h-3 w-3" />
+              <span>{t('whatAffectsReading')}</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" className="w-48 p-2">
+            <div className="flex flex-wrap gap-1">
+              {factors.map((factor, i) => (
+                <Badge key={i} variant="secondary" className="text-xs">
+                  {factor}
+                </Badge>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
-    {children}
-  </div>
-);
+  );
+};
 
 // Status Badge Component
 const StatusBadge = ({ status }: { status: { label: string; color: string; hint: string } | null }) => {
