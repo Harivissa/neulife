@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/4ab9d9a2-5029-4a3c-b36f-01abdb821f77
+**URL**: https://neulife.lovable.app/
 
 ## How can I edit this code?
 
@@ -10,7 +10,7 @@ There are several ways of editing your application.
 
 **Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/4ab9d9a2-5029-4a3c-b36f-01abdb821f77) and start prompting.
+Simply visit the [Lovable Project](https://neulife.lovable.app/) and start prompting.
 
 Changes made via Lovable will be committed automatically to this repo.
 
