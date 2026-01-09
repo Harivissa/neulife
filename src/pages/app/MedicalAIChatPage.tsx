@@ -10,13 +10,16 @@ import {
   Heart,
   AlertTriangle,
   LogIn,
-  X
+  X,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AIOrb, SafeVoiceInput } from '@/components/chat';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -48,8 +51,10 @@ const MedicalAIChatPage = () => {
     return stored ? parseInt(stored, 10) : 0;
   });
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { speak, stop, isPlaying, isLoading: ttsLoading } = useTextToSpeech();
 
   // Determine AI orb state
   const orbState = isLoading ? 'responding' : 'idle';
@@ -196,6 +201,16 @@ const MedicalAIChatPage = () => {
     }
   };
 
+  const handleSpeak = (idx: number, content: string) => {
+    if (isPlaying && speakingIdx === idx) {
+      stop();
+      setSpeakingIdx(null);
+    } else {
+      setSpeakingIdx(idx);
+      speak(content).then(() => setSpeakingIdx(null));
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 h-[calc(100vh-3.5rem)] flex flex-col max-w-4xl mx-auto">
       {/* Header with AI Orb */}
@@ -282,7 +297,7 @@ const MedicalAIChatPage = () => {
               {messages.map((message, idx) => (
                 <div
                   key={idx}
-                  className={`flex gap-3 ${
+                  className={`flex gap-3 group ${
                     message.role === 'user' ? 'justify-end' : 'justify-start'
                   }`}
                 >
@@ -298,7 +313,24 @@ const MedicalAIChatPage = () => {
                         : 'bg-muted'
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <div className="flex items-start gap-2">
+                      <p className="text-sm whitespace-pre-wrap flex-1">{message.content}</p>
+                      {message.role === 'assistant' && (
+                        <button
+                          onClick={() => handleSpeak(idx, message.content)}
+                          className="flex-shrink-0 p-1 rounded-full hover:bg-background/20 transition-colors opacity-0 group-hover:opacity-100"
+                          title={isPlaying && speakingIdx === idx ? t('chat.stopSpeaking', 'Stop') : t('chat.speak', 'Listen')}
+                        >
+                          {ttsLoading && speakingIdx === idx ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : isPlaying && speakingIdx === idx ? (
+                            <VolumeX className="h-4 w-4" />
+                          ) : (
+                            <Volume2 className="h-4 w-4" />
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {message.role === 'user' && (
                     <div className="h-8 w-8 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Mic, MicOff } from "lucide-react";
+import { MessageCircle, X, Send, Mic, MicOff, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,6 +8,7 @@ import { AIOrb } from "./AIOrb";
 import { SafeVoiceInput } from "./SafeVoiceInput";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 
 interface Message {
   id: string;
@@ -23,6 +24,8 @@ export const FloatingAIChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
   const [orbState, setOrbState] = useState<"idle" | "listening" | "responding">("idle");
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+  const { speak, stop, isPlaying, isLoading: ttsLoading } = useTextToSpeech();
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -88,6 +91,16 @@ export const FloatingAIChat = () => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const handleSpeak = (msg: Message) => {
+    if (isPlaying && speakingMessageId === msg.id) {
+      stop();
+      setSpeakingMessageId(null);
+    } else {
+      setSpeakingMessageId(msg.id);
+      speak(msg.content).then(() => setSpeakingMessageId(null));
     }
   };
 
@@ -158,7 +171,7 @@ export const FloatingAIChat = () => {
                     {messages.map((msg) => (
                       <div
                         key={msg.id}
-                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} group`}
                       >
                         <div
                           className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm ${
@@ -167,7 +180,24 @@ export const FloatingAIChat = () => {
                               : "bg-muted text-foreground rounded-bl-md"
                           }`}
                         >
-                          {msg.content}
+                          <div className="flex items-start gap-2">
+                            <span className="flex-1">{msg.content}</span>
+                            {msg.role === "assistant" && (
+                              <button
+                                onClick={() => handleSpeak(msg)}
+                                className="flex-shrink-0 p-1 rounded-full hover:bg-background/20 transition-colors opacity-0 group-hover:opacity-100"
+                                title={isPlaying && speakingMessageId === msg.id ? t("chat.stopSpeaking", "Stop") : t("chat.speak", "Listen")}
+                              >
+                                {ttsLoading && speakingMessageId === msg.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : isPlaying && speakingMessageId === msg.id ? (
+                                  <VolumeX className="h-4 w-4" />
+                                ) : (
+                                  <Volume2 className="h-4 w-4" />
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
