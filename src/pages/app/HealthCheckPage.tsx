@@ -38,7 +38,11 @@ import { MiniECG } from '@/components/demo/MiniECG';
 import { cn } from '@/lib/utils';
 import { InteractiveBodyMap } from '@/components/InteractiveBodyMap';
 import { RegionData } from '@/components/InteractiveBodyMap/types';
+import { TouchableBodyMap } from '@/components/TouchableBodyMap';
+import { PainPoint } from '@/components/TouchableBodyMap/types';
+import { getAnatomicalZone, calculateRiskLevel } from '@/components/TouchableBodyMap/anatomicalZones';
 import { useHealthStorage } from '@/hooks/useHealthStorage';
+import { useMedicalHistory } from '@/hooks/useMedicalHistory';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -86,6 +90,12 @@ const HealthCheckPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
   const [simpleTone, setSimpleTone] = useState(false);
+  const [useRealisticBody, setUseRealisticBody] = useState(true);
+  const [painPoints, setPainPoints] = useState<PainPoint[]>([]);
+  const [bodyGender, setBodyGender] = useState<'male' | 'female'>('male');
+  
+  // Medical history hook
+  const { savePainPoints, saveSymptoms, saveVitals, saveTriageResult } = useMedicalHistory();
 
   // Temperature helpers
   const getTemperatureStatus = (temp?: number) => {
@@ -263,6 +273,25 @@ const HealthCheckPage = () => {
 
   const handleRegionSelect = (region: RegionData) => {
     setSelectedRegion({ ...region, severity: painSeverity });
+  };
+
+  const handlePainPointsChange = (points: PainPoint[]) => {
+    setPainPoints(points);
+    // Also update selectedRegion for compatibility with existing triage
+    if (points.length > 0) {
+      const latestPoint = points[points.length - 1];
+      setSelectedRegion({
+        region: latestPoint.anatomicalZone.name,
+        regionLabel: latestPoint.anatomicalZone.name,
+        view: 'front',
+        layer: 'skin',
+        severity: latestPoint.severity,
+        gender: bodyGender,
+      });
+      setPainSeverity(latestPoint.severity);
+    } else {
+      setSelectedRegion(null);
+    }
   };
 
   const updateVital = (key: keyof VitalReadings, value: number | undefined) => {
@@ -473,13 +502,65 @@ const HealthCheckPage = () => {
               </div>
             )}
 
-            {/* Body Map */}
-            <div className="border-t pt-4">
-              <InteractiveBodyMap
-                onRegionSelect={handleRegionSelect}
-                symptoms={symptoms}
-                className="bg-transparent border-0 p-0"
-              />
+            {/* Body Map Toggle */}
+            <div className="border-t pt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">{t('bodyMap')}</Label>
+                <div className="flex items-center gap-2 bg-muted/50 px-2 py-1 rounded-lg">
+                  <Label htmlFor="body-type-toggle" className="text-xs text-muted-foreground">
+                    Basic
+                  </Label>
+                  <Switch
+                    id="body-type-toggle"
+                    checked={useRealisticBody}
+                    onCheckedChange={setUseRealisticBody}
+                  />
+                  <Label htmlFor="body-type-toggle" className="text-xs font-medium">
+                    Realistic
+                  </Label>
+                </div>
+              </div>
+
+              {useRealisticBody ? (
+                <TouchableBodyMap
+                  gender={bodyGender}
+                  onGenderChange={setBodyGender}
+                  painPoints={painPoints}
+                  onPainPointAdd={(point) => {
+                    const zone = getAnatomicalZone(point.x, point.y);
+                    const riskLevel = calculateRiskLevel(zone, point.severity);
+                    const newPoint: PainPoint = {
+                      id: crypto.randomUUID(),
+                      x: point.x,
+                      y: point.y,
+                      severity: point.severity,
+                      anatomicalZone: zone,
+                      riskLevel,
+                      timestamp: new Date(),
+                    };
+                    const newPoints = [...painPoints, newPoint];
+                    handlePainPointsChange(newPoints);
+                  }}
+                  onPainPointRemove={(id) => {
+                    const newPoints = painPoints.filter(p => p.id !== id);
+                    handlePainPointsChange(newPoints);
+                  }}
+                  onPainPointUpdate={(id, severity) => {
+                    const newPoints = painPoints.map(p => 
+                      p.id === id 
+                        ? { ...p, severity, riskLevel: calculateRiskLevel(p.anatomicalZone, severity) }
+                        : p
+                    );
+                    handlePainPointsChange(newPoints);
+                  }}
+                />
+              ) : (
+                <InteractiveBodyMap
+                  onRegionSelect={handleRegionSelect}
+                  symptoms={symptoms}
+                  className="bg-transparent border-0 p-0"
+                />
+              )}
             </div>
           </Card>
 

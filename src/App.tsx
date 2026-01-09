@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import MedicalSummaryPage from "./pages/MedicalSummaryPage";
 import { AppLayout } from "./components/layout/AppLayout";
 import AppHome from "./pages/app/AppHome";
 import HealthAssistantPage from "./pages/app/HealthAssistantPage";
@@ -32,6 +33,9 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<Admin />} />
+            
+            {/* Medical Summary - Public Access via QR */}
+            <Route path="/medical-summary/:token" element={<MedicalSummaryPage />} />
             
             {/* NEULIFE Protected App Routes */}
             <Route path="/app" element={<AppLayout />}>

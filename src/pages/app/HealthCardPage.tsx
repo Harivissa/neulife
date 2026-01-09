@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react';
 import { useHealthStorage, VitalReading } from '@/hooks/useHealthStorage';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { 
   CreditCard, 
   Trash2, 
@@ -15,12 +17,21 @@ import {
   Scale,
   Clock,
   TrendingUp,
-  History
+  History,
+  QrCode,
+  RefreshCw,
+  XCircle,
+  Shield,
+  Smartphone,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { PersonalizedGuidance } from '@/components/guidance/PersonalizedGuidance';
 import { VitalTrendAnalysis } from '@/components/health/VitalTrendAnalysis';
+import { useMedicalQR } from '@/hooks/useMedicalQR';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const getVitalIcon = (type: VitalReading['type']) => {
   switch (type) {
@@ -62,6 +73,69 @@ const formatVitalValue = (vital: VitalReading) => {
 
 const HealthCardPage = () => {
   const { healthData, removeVital, removeSymptom, clearAll } = useHealthStorage();
+  const { user } = useAuth();
+  const { qrCodeUrl, qrToken, isLoading, generateQRCode, disableQRToken, regenerateQRToken } = useMedicalQR();
+  const [hcid, setHcid] = useState<string | null>(null);
+
+  // Fetch or create user's health card ID
+  useEffect(() => {
+    const fetchHealthCard = async () => {
+      if (!user) return;
+
+      const { data: existingCard, error } = await supabase
+        .from('health_cards')
+        .select('hcid')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existingCard) {
+        setHcid(existingCard.hcid);
+      } else if (!error) {
+        // Create new health card
+        const newHcid = `HCID-${user.id.substring(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+        const { data: newCard } = await supabase
+          .from('health_cards')
+          .insert({ user_id: user.id, hcid: newHcid })
+          .select('hcid')
+          .single();
+        
+        if (newCard) {
+          setHcid(newCard.hcid);
+        }
+      }
+    };
+
+    fetchHealthCard();
+  }, [user]);
+
+  // Generate QR code when hcid is available
+  useEffect(() => {
+    if (hcid && !qrCodeUrl) {
+      generateQRCode(hcid, window.location.origin);
+    }
+  }, [hcid, qrCodeUrl, generateQRCode]);
+
+  const handleRegenerateQR = async () => {
+    if (!hcid) return;
+    const result = await regenerateQRToken(hcid, window.location.origin);
+    if (result) {
+      toast.success('QR code regenerated successfully');
+    } else {
+      toast.error('Failed to regenerate QR code');
+    }
+  };
+
+  const handleDisableQR = async () => {
+    const confirmed = confirm('Disable your Medical QR? Doctors will no longer be able to access your summary.');
+    if (!confirmed) return;
+    
+    const result = await disableQRToken();
+    if (result) {
+      toast.success('Medical QR disabled');
+    } else {
+      toast.error('Failed to disable QR');
+    }
+  };
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -73,7 +147,7 @@ const HealthCardPage = () => {
           <div>
             <h1 className="text-2xl font-bold">Health Card</h1>
             <p className="text-muted-foreground">
-              Your health history stored locally
+              Your health history & Medical QR Access
             </p>
           </div>
         </div>
@@ -91,6 +165,88 @@ const HealthCardPage = () => {
           Clear All
         </Button>
       </div>
+
+      {/* Medical QR Section */}
+      <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+          {/* QR Code Display */}
+          <div className="flex-shrink-0">
+            {isLoading ? (
+              <div className="w-40 h-40 bg-muted/50 rounded-xl flex items-center justify-center">
+                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : qrCodeUrl ? (
+              <div className="bg-white p-3 rounded-xl shadow-lg">
+                <img src={qrCodeUrl} alt="Medical QR Code" className="w-36 h-36" />
+              </div>
+            ) : (
+              <div className="w-40 h-40 bg-muted/50 rounded-xl flex items-center justify-center border-2 border-dashed border-muted-foreground/30">
+                <QrCode className="h-12 w-12 text-muted-foreground/50" />
+              </div>
+            )}
+          </div>
+
+          {/* QR Info & Actions */}
+          <div className="flex-1 space-y-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-lg font-semibold">NeuLife Medical QR</h3>
+                {qrToken && (
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Active
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Share this QR with doctors or hospitals for quick access to your medical summary.
+              </p>
+            </div>
+
+            {hcid && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Health Card ID:</span>
+                <code className="bg-muted px-2 py-0.5 rounded font-mono">{hcid}</code>
+              </div>
+            )}
+
+            <div className="flex items-start gap-3">
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Smartphone className="h-4 w-4" />
+                  <span>Scan to view read-only medical summary</span>
+                </div>
+                <p className="text-xs text-muted-foreground/70">
+                  <em>This is patient-reported history to assist clinical decisions.</em>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRegenerateQR}
+                disabled={isLoading || !hcid}
+                className="gap-1"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Regenerate
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDisableQR}
+                disabled={isLoading || !qrToken}
+                className="gap-1 text-destructive hover:text-destructive"
+              >
+                <XCircle className="h-4 w-4" />
+                Disable
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       <Tabs defaultValue="trends" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-4">
