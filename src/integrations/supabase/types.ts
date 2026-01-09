@@ -175,6 +175,75 @@ export type Database = {
           },
         ]
       }
+      medical_history: {
+        Row: {
+          body_coordinates: Json | null
+          created_at: string
+          event_type: string
+          hcid: string | null
+          id: string
+          notes: string | null
+          symptoms: string | null
+          triage_result: Json | null
+          user_id: string
+          vitals: Json | null
+        }
+        Insert: {
+          body_coordinates?: Json | null
+          created_at?: string
+          event_type: string
+          hcid?: string | null
+          id?: string
+          notes?: string | null
+          symptoms?: string | null
+          triage_result?: Json | null
+          user_id: string
+          vitals?: Json | null
+        }
+        Update: {
+          body_coordinates?: Json | null
+          created_at?: string
+          event_type?: string
+          hcid?: string | null
+          id?: string
+          notes?: string | null
+          symptoms?: string | null
+          triage_result?: Json | null
+          user_id?: string
+          vitals?: Json | null
+        }
+        Relationships: []
+      }
+      medical_qr_tokens: {
+        Row: {
+          created_at: string
+          hcid: string
+          id: string
+          is_active: boolean
+          last_accessed_at: string | null
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hcid: string
+          id?: string
+          is_active?: boolean
+          last_accessed_at?: string | null
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hcid?: string
+          id?: string
+          is_active?: boolean
+          last_accessed_at?: string | null
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
