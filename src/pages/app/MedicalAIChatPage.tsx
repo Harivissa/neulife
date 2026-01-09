@@ -4,16 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  MessageCircle, 
   Send, 
   Loader2, 
-  Bot, 
   User, 
   Heart,
   AlertTriangle,
-  Sparkles
+  LogIn,
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AIOrb, SafeVoiceInput } from '@/components/chat';
+import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -21,6 +24,8 @@ interface Message {
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/medical-ai-chat`;
+const FREE_MESSAGE_LIMIT = 10;
+const MESSAGE_COUNT_KEY = 'neulife_chat_message_count';
 
 const suggestedQuestions = [
   "What should I do if I have a headache?",
@@ -31,16 +36,41 @@ const suggestedQuestions = [
 ];
 
 const MedicalAIChatPage = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [messageCount, setMessageCount] = useState(() => {
+    const stored = localStorage.getItem(MESSAGE_COUNT_KEY);
+    return stored ? parseInt(stored, 10) : 0;
+  });
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Determine AI orb state
+  const orbState = isLoading ? 'responding' : 'idle';
+
+  // Check if user has reached limit
+  const hasReachedLimit = !isAuthenticated && messageCount >= FREE_MESSAGE_LIMIT;
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Reset message count if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      localStorage.removeItem(MESSAGE_COUNT_KEY);
+      setMessageCount(0);
+      setShowLoginPrompt(false);
+    }
+  }, [isAuthenticated]);
 
   const streamChat = async (userMessages: Message[]) => {
     const resp = await fetch(CHAT_URL, {
@@ -55,12 +85,12 @@ const MedicalAIChatPage = () => {
     if (!resp.ok) {
       const errorData = await resp.json().catch(() => ({}));
       if (resp.status === 429) {
-        throw new Error('Too many requests. Please wait a moment and try again.');
+        throw new Error(t('chat.tooManyRequests', 'Too many requests. Please wait a moment and try again.'));
       }
       if (resp.status === 402) {
-        throw new Error('AI credits exhausted. Please try again later.');
+        throw new Error(t('chat.creditsExhausted', 'AI credits exhausted. Please try again later.'));
       }
-      throw new Error(errorData.error || 'Failed to get response');
+      throw new Error(errorData.error || t('chat.failedResponse', 'Failed to get response'));
     }
 
     if (!resp.body) throw new Error('No response body');
@@ -115,22 +145,44 @@ const MedicalAIChatPage = () => {
     const trimmedInput = input.trim();
     if (!trimmedInput || isLoading) return;
 
+    // Check message limit for unauthenticated users
+    if (!isAuthenticated && messageCount >= FREE_MESSAGE_LIMIT) {
+      setShowLoginPrompt(true);
+      return;
+    }
+
     const userMessage: Message = { role: 'user', content: trimmedInput };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setInput('');
     setIsLoading(true);
 
+    // Increment message count for unauthenticated users
+    if (!isAuthenticated) {
+      const newCount = messageCount + 1;
+      setMessageCount(newCount);
+      localStorage.setItem(MESSAGE_COUNT_KEY, newCount.toString());
+      
+      // Show login prompt after reaching limit
+      if (newCount >= FREE_MESSAGE_LIMIT) {
+        setShowLoginPrompt(true);
+      }
+    }
+
     try {
       await streamChat(updatedMessages);
     } catch (error) {
       console.error('Chat error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to send message');
-      // Remove the failed user message
+      toast.error(error instanceof Error ? error.message : t('chat.sendFailed', 'Failed to send message'));
       setMessages(messages);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleVoiceTranscription = (text: string) => {
+    // Voice input populates the text field - user must confirm by pressing Send
+    setInput(prev => prev ? `${prev} ${text}` : text);
   };
 
   const handleSuggestedQuestion = (question: string) => {
@@ -146,37 +198,69 @@ const MedicalAIChatPage = () => {
 
   return (
     <div className="p-4 md:p-6 h-[calc(100vh-3.5rem)] flex flex-col max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-          <Bot className="h-6 w-6 text-primary-foreground" />
-        </div>
+      {/* Header with AI Orb */}
+      <div className="flex items-center gap-4 mb-4">
+        <AIOrb state={orbState} size="sm" />
         <div>
-          <h1 className="text-xl md:text-2xl font-bold">Neulife Medical AI</h1>
+          <h1 className="text-xl md:text-2xl font-bold">{t('chat.title', 'NeuLife Medical AI')}</h1>
           <p className="text-sm text-muted-foreground">
-            Ask health questions in simple words
+            {t('chat.subtitle', 'Ask health questions in simple words')}
           </p>
         </div>
       </div>
+
+      {/* Login prompt overlay */}
+      {showLoginPrompt && !isAuthenticated && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full p-6 relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2"
+              onClick={() => setShowLoginPrompt(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            
+            <div className="flex flex-col items-center text-center">
+              <AIOrb state="idle" size="md" className="mb-4" />
+              <h2 className="text-xl font-semibold mb-2">
+                {t('chat.loginRequired', 'Continue with NeuLife')}
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                {t('chat.loginMessage', "You've used your 10 free messages. Sign in to unlock unlimited access to NeuLife AI and all health features.")}
+              </p>
+              <Button onClick={() => navigate('/auth')} className="w-full gap-2">
+                <LogIn className="h-4 w-4" />
+                {t('chat.signIn', 'Sign In to Continue')}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Chat area */}
       <Card className="flex-1 flex flex-col overflow-hidden">
         <ScrollArea className="flex-1 p-4" ref={scrollRef}>
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6">
-              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Sparkles className="h-8 w-8 text-primary" />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">Welcome to Neulife AI</h2>
+              <AIOrb state="idle" size="lg" className="mb-6" />
+              <h2 className="text-xl font-semibold mb-2">{t('chat.welcome', 'Welcome to NeuLife AI')}</h2>
               <p className="text-muted-foreground mb-6 max-w-md">
-                I'm here to help you understand health topics in simple terms. 
-                Ask me anything about symptoms, wellness, or general health questions.
+                {t('chat.welcomeMessage', "I'm here to help you understand health topics in simple terms. Ask me anything about symptoms, wellness, or general health questions.")}
               </p>
+              
+              {/* Message count for unauthenticated users */}
+              {!isAuthenticated && (
+                <p className="text-xs text-muted-foreground mb-4">
+                  {t('chat.freeMessages', 'Free messages remaining: {{count}}', { count: FREE_MESSAGE_LIMIT - messageCount })}
+                </p>
+              )}
               
               {/* Suggested questions */}
               <div className="w-full max-w-md space-y-2">
                 <p className="text-sm font-medium text-muted-foreground mb-3">
-                  Try asking:
+                  {t('chat.tryAsking', 'Try asking:')}
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {suggestedQuestions.map((question, idx) => (
@@ -237,21 +321,33 @@ const MedicalAIChatPage = () => {
           )}
         </ScrollArea>
 
-        {/* Input area */}
+        {/* Input area with voice input */}
         <div className="border-t p-4">
-          <div className="flex gap-2">
+          {/* Voice input helper text */}
+          <p className="text-xs text-muted-foreground text-center mb-2">
+            {t('chat.voiceHelper', 'Use voice to type, then review and press Send')}
+          </p>
+          
+          <div className="flex gap-2 items-end">
+            {/* Voice input - populates text field */}
+            <SafeVoiceInput 
+              onTranscription={handleVoiceTranscription}
+              disabled={isLoading || hasReachedLimit}
+            />
+            
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type your health question..."
-              className="min-h-[44px] max-h-32 resize-none"
+              placeholder={t('chat.placeholder', 'Type your health question...')}
+              className="min-h-[44px] max-h-32 resize-none flex-1"
               rows={1}
-              disabled={isLoading}
+              disabled={isLoading || hasReachedLimit}
             />
+            
             <Button
               onClick={handleSend}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || hasReachedLimit}
               size="icon"
               className="h-11 w-11 flex-shrink-0"
             >
@@ -262,16 +358,29 @@ const MedicalAIChatPage = () => {
               )}
             </Button>
           </div>
+          
+          {/* Clear input button when there's text */}
+          {input && (
+            <div className="flex justify-center mt-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setInput('')}
+                className="text-xs text-muted-foreground"
+              >
+                <X className="h-3 w-3 mr-1" />
+                {t('chat.clearInput', 'Clear')}
+              </Button>
+            </div>
+          )}
         </div>
       </Card>
 
       {/* Disclaimer */}
       <div className="mt-3 p-3 bg-muted/50 rounded-lg border border-border flex items-start gap-2">
-        <AlertTriangle className="h-4 w-4 text-accent flex-shrink-0 mt-0.5" />
+        <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground">
-          <strong className="text-foreground">Important:</strong> This AI provides general health information only. 
-          It does not diagnose conditions or prescribe treatments. 
-          Always consult a healthcare professional for medical advice.
+          <strong className="text-foreground">{t('chat.important', 'Important:')}</strong> {t('chat.disclaimer', 'This AI provides general health information only. It does not diagnose conditions or prescribe treatments. Always consult a healthcare professional for medical advice.')}
         </p>
       </div>
     </div>

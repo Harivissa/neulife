@@ -18,6 +18,7 @@ import HealthCardPage from "./pages/app/HealthCardPage";
 import ReportPage from "./pages/app/ReportPage";
 import SettingsPage from "./pages/app/SettingsPage";
 import WellnessPage from "./pages/app/WellnessPage";
+import MedicalAIChatPage from "./pages/app/MedicalAIChatPage";
 
 const queryClient = new QueryClient();
 
@@ -28,11 +29,14 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
+        <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<Admin />} />
+            
+            {/* AI Chat - Public Access (with message limits for non-logged in users) */}
+            <Route path="/ai-chat" element={<MedicalAIChatPage />} />
             
             {/* Medical Summary - Public Access via QR */}
             <Route path="/medical-summary/:token" element={<MedicalSummaryPage />} />

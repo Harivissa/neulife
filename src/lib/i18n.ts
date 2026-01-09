@@ -108,6 +108,38 @@ const commonKeys = {
   notDiagnosis: "This is guidance, not a medical diagnosis.",
   readingsAffected: "Readings can be affected by stress, activity, food, and sleep.",
   ifWorsens: "If symptoms worsen, please consult a healthcare professional.",
+  
+  // Voice Input
+  voiceInput: {
+    listening: "Listening...",
+    processing: "Processing...",
+    microphoneError: "Failed to access microphone",
+    unclearMessage: "I may not have understood that clearly. You can edit or try again.",
+    reviewText: "Please review the text before sending",
+    processingError: "Could not process audio. Please try again or type instead.",
+  },
+  
+  // AI Chat
+  chat: {
+    title: "NeuLife Medical AI",
+    subtitle: "Ask health questions in simple words",
+    welcome: "Welcome to NeuLife AI",
+    welcomeMessage: "I'm here to help you understand health topics in simple terms. Ask me anything about symptoms, wellness, or general health questions.",
+    tryAsking: "Try asking:",
+    placeholder: "Type your health question...",
+    voiceHelper: "Use voice to type, then review and press Send",
+    clearInput: "Clear",
+    important: "Important:",
+    disclaimer: "This AI provides general health information only. It does not diagnose conditions or prescribe treatments. Always consult a healthcare professional for medical advice.",
+    loginRequired: "Continue with NeuLife",
+    loginMessage: "You've used your 10 free messages. Sign in to unlock unlimited access to NeuLife AI and all health features.",
+    signIn: "Sign In to Continue",
+    freeMessages: "Free messages remaining: {{count}}",
+    tooManyRequests: "Too many requests. Please wait a moment and try again.",
+    creditsExhausted: "AI credits exhausted. Please try again later.",
+    failedResponse: "Failed to get response",
+    sendFailed: "Failed to send message",
+  },
 };
 
 const resources = {
