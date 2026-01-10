@@ -1,13 +1,15 @@
 import React from 'react';
-import { Gender, BodyView } from './types';
+import { Gender, BodyView, AnatomyLayer } from './types';
 import { motion } from 'framer-motion';
+import AnatomyLayers from './AnatomyLayers';
 
 interface BodySilhouetteProps {
   gender: Gender;
   view: BodyView;
+  anatomyLayer: AnatomyLayer;
 }
 
-export const BodySilhouette: React.FC<BodySilhouetteProps> = ({ gender, view }) => {
+export const BodySilhouette: React.FC<BodySilhouetteProps> = ({ gender, view, anatomyLayer }) => {
   // Get rotation angle based on view
   const getViewTransform = () => {
     switch (view) {
@@ -264,9 +266,15 @@ export const BodySilhouette: React.FC<BodySilhouetteProps> = ({ gender, view }) 
         stroke="rgba(0, 212, 255, 0.8)"
         strokeWidth="1.5"
         filter="url(#neonGlow)"
+        opacity={anatomyLayer === 'skin' ? 1 : 0.4}
       >
         {renderBody()}
       </g>
+
+      {/* Anatomy Layers Overlay */}
+      {anatomyLayer !== 'skin' && (
+        <AnatomyLayers gender={gender} view={view} activeLayer={anatomyLayer} />
+      )}
 
       {/* Animated pulse effect for heart area */}
       <style>
