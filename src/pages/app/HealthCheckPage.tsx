@@ -38,7 +38,7 @@ import { MiniECG } from '@/components/demo/MiniECG';
 import { cn } from '@/lib/utils';
 import { InteractiveBodyMap } from '@/components/InteractiveBodyMap';
 import { RegionData } from '@/components/InteractiveBodyMap/types';
-import { TouchableBodyMap } from '@/components/TouchableBodyMap';
+import { HolographicBodyMap, PainMarker, BodyView, mapToInternalZone, calculateInternalRisk } from '@/components/HolographicBodyMap';
 import { PainPoint } from '@/components/TouchableBodyMap/types';
 import { getAnatomicalZone, calculateRiskLevel } from '@/components/TouchableBodyMap/anatomicalZones';
 import { useHealthStorage } from '@/hooks/useHealthStorage';
@@ -92,7 +92,9 @@ const HealthCheckPage = () => {
   const [simpleTone, setSimpleTone] = useState(false);
   const [useRealisticBody, setUseRealisticBody] = useState(true);
   const [painPoints, setPainPoints] = useState<PainPoint[]>([]);
+  const [painMarkers, setPainMarkers] = useState<PainMarker[]>([]);
   const [bodyGender, setBodyGender] = useState<'male' | 'female'>('male');
+  const [bodyView, setBodyView] = useState<BodyView>('front');
   
   // Medical history hook
   const { savePainPoints, saveSymptoms, saveVitals, saveTriageResult } = useMedicalHistory();
@@ -522,30 +524,48 @@ const HealthCheckPage = () => {
               </div>
 
               {useRealisticBody ? (
-                <TouchableBodyMap
+                <HolographicBodyMap
                   gender={bodyGender}
                   onGenderChange={setBodyGender}
-                  painPoints={painPoints}
-                  onPainPointAdd={(point) => {
-                    const zone = getAnatomicalZone(point.x, point.y);
-                    const riskLevel = calculateRiskLevel(zone, point.severity);
-                    const newPoint: PainPoint = {
+                  painMarkers={painMarkers}
+                  currentView={bodyView}
+                  onViewChange={setBodyView}
+                  onPainMarkerAdd={(marker) => {
+                    const internalZone = mapToInternalZone(marker.x, marker.y, marker.view);
+                    const internalRisk = calculateInternalRisk(internalZone, marker.severity);
+                    const newMarker: PainMarker = {
                       id: crypto.randomUUID(),
-                      x: point.x,
-                      y: point.y,
-                      severity: point.severity,
-                      anatomicalZone: zone,
-                      riskLevel,
+                      x: marker.x,
+                      y: marker.y,
+                      severity: marker.severity,
+                      view: marker.view,
+                      timestamp: new Date(),
+                      _internalZone: internalZone.name,
+                      _internalRiskLevel: internalRisk,
+                    };
+                    setPainMarkers(prev => [...prev, newMarker]);
+                    // Also sync to legacy painPoints for triage compatibility
+                    const legacyZone = getAnatomicalZone(marker.x, marker.y);
+                    const legacyRisk = calculateRiskLevel(legacyZone, marker.severity);
+                    const legacyPoint: PainPoint = {
+                      id: newMarker.id,
+                      x: marker.x,
+                      y: marker.y,
+                      severity: marker.severity,
+                      anatomicalZone: legacyZone,
+                      riskLevel: legacyRisk,
                       timestamp: new Date(),
                     };
-                    const newPoints = [...painPoints, newPoint];
-                    handlePainPointsChange(newPoints);
+                    handlePainPointsChange([...painPoints, legacyPoint]);
                   }}
-                  onPainPointRemove={(id) => {
-                    const newPoints = painPoints.filter(p => p.id !== id);
-                    handlePainPointsChange(newPoints);
+                  onPainMarkerRemove={(id) => {
+                    setPainMarkers(prev => prev.filter(m => m.id !== id));
+                    handlePainPointsChange(painPoints.filter(p => p.id !== id));
                   }}
-                  onPainPointUpdate={(id, severity) => {
+                  onPainMarkerUpdate={(id, severity) => {
+                    setPainMarkers(prev => prev.map(m => 
+                      m.id === id ? { ...m, severity } : m
+                    ));
                     const newPoints = painPoints.map(p => 
                       p.id === id 
                         ? { ...p, severity, riskLevel: calculateRiskLevel(p.anatomicalZone, severity) }
