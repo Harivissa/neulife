@@ -1,5 +1,6 @@
 export type Gender = 'male' | 'female';
 export type BodyView = 'front' | 'back' | 'left' | 'right';
+export type AnatomyLayer = 'skin' | 'skeleton' | 'organs' | 'muscles';
 
 export interface PainMarker {
   id: string;

@@ -1,9 +1,9 @@
 import React, { useRef, useCallback, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Gender, BodyView, PainMarker, HolographicBodyMapProps } from './types';
+import { Gender, BodyView, PainMarker, HolographicBodyMapProps, AnatomyLayer } from './types';
 import { mapToInternalZone, calculateInternalRisk } from './internalZoneMapping';
-import { User, UserRound, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { User, UserRound, ChevronLeft, ChevronRight, Bone, Heart, Activity, Layers } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,6 +16,12 @@ import {
 import BodySilhouette from './BodySilhouette';
 
 const viewOrder: BodyView[] = ['front', 'right', 'back', 'left'];
+const layerOptions: { id: AnatomyLayer; label: string; icon: React.ReactNode; color: string }[] = [
+  { id: 'skin', label: 'Skin', icon: <Layers className="w-3.5 h-3.5" />, color: 'cyan' },
+  { id: 'skeleton', label: 'Skeleton', icon: <Bone className="w-3.5 h-3.5" />, color: 'blue' },
+  { id: 'organs', label: 'Organs', icon: <Heart className="w-3.5 h-3.5" />, color: 'red' },
+  { id: 'muscles', label: 'Muscles', icon: <Activity className="w-3.5 h-3.5" />, color: 'orange' },
+];
 
 export const HolographicBodyMap: React.FC<HolographicBodyMapProps> = ({
   gender,
@@ -32,6 +38,7 @@ export const HolographicBodyMap: React.FC<HolographicBodyMapProps> = ({
   const [pendingMarker, setPendingMarker] = useState<{ x: number; y: number } | null>(null);
   const [severity, setSeverity] = useState(5);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  const [anatomyLayer, setAnatomyLayer] = useState<AnatomyLayer>('skin');
 
   const handleBodyClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
@@ -166,6 +173,28 @@ export const HolographicBodyMap: React.FC<HolographicBodyMapProps> = ({
         </Button>
       </div>
 
+      {/* Anatomy Layer Toggle */}
+      <div className="flex items-center justify-center gap-2">
+        {layerOptions.map((layer) => (
+          <button
+            key={layer.id}
+            onClick={() => setAnatomyLayer(layer.id)}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300',
+              anatomyLayer === layer.id
+                ? layer.color === 'cyan' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 shadow-[0_0_10px_rgba(0,212,255,0.2)]'
+                : layer.color === 'blue' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.2)]'
+                : layer.color === 'red' ? 'bg-red-500/20 text-red-400 border border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]'
+                : 'bg-orange-500/20 text-orange-400 border border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.2)]'
+                : 'bg-slate-800/30 text-slate-500 border border-slate-700/50 hover:text-slate-300'
+            )}
+          >
+            {layer.icon}
+            {layer.label}
+          </button>
+        ))}
+      </div>
+
       {/* Body Container - Dark futuristic background */}
       <div 
         ref={containerRef}
@@ -206,14 +235,14 @@ export const HolographicBodyMap: React.FC<HolographicBodyMapProps> = ({
         {/* Body Silhouette */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={`${gender}-${currentView}`}
+            key={`${gender}-${currentView}-${anatomyLayer}`}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
             className="absolute inset-0 p-4"
           >
-            <BodySilhouette gender={gender} view={currentView} />
+            <BodySilhouette gender={gender} view={currentView} anatomyLayer={anatomyLayer} />
           </motion.div>
         </AnimatePresence>
 
