@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.guided-triage]
 verify_jwt = false
+
+[functions.verify-medical-token]
+verify_jwt = false
