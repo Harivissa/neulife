@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useMedicalQR } from '@/hooks/useMedicalQR';
 import { format } from 'date-fns';
 import { 
   User, Calendar, Activity, Heart, Thermometer, 
@@ -46,7 +45,6 @@ interface MedicalSummaryData {
 const MedicalSummaryPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { validateToken } = useMedicalQR();
   const [data, setData] = useState<MedicalSummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,56 +58,32 @@ const MedicalSummaryPage: React.FC = () => {
       }
 
       try {
-        // Validate token
-        const tokenData = await validateToken(token);
-        if (!tokenData) {
+        // Use secure edge function to verify token and fetch data
+        const { data: responseData, error: fetchError } = await supabase.functions.invoke(
+          'verify-medical-token',
+          {
+            body: { token }
+          }
+        );
+
+        if (fetchError) {
+          console.error('Edge function error:', fetchError);
           setError('This medical summary link is invalid or has been disabled');
           setLoading(false);
           return;
         }
 
-        const hcid = tokenData.hcid;
-
-        // Fetch health card to get user_id
-        const { data: healthCard, error: hcError } = await supabase
-          .from('health_cards')
-          .select('user_id')
-          .eq('hcid', hcid)
-          .maybeSingle();
-
-        if (hcError || !healthCard) {
-          setError('Unable to retrieve patient information');
+        if (responseData?.error) {
+          console.error('Token verification error:', responseData.error);
+          setError('This medical summary link is invalid or has been disabled');
           setLoading(false);
           return;
         }
 
-        // Fetch profile
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('name, age, sex')
-          .eq('id', healthCard.user_id)
-          .maybeSingle();
-
-        if (profileError) {
-          console.error('Profile fetch error:', profileError);
-        }
-
-        // Fetch medical history
-        const { data: history, error: historyError } = await supabase
-          .from('medical_history')
-          .select('*')
-          .eq('hcid', hcid)
-          .order('created_at', { ascending: false })
-          .limit(100);
-
-        if (historyError) {
-          console.error('History fetch error:', historyError);
-        }
-
         setData({
-          profile: profile || { name: null, age: null, sex: null },
-          history: (history || []) as unknown as MedicalHistoryItem[],
-          hcid,
+          profile: responseData.profile || { name: null, age: null, sex: null },
+          history: (responseData.history || []) as MedicalHistoryItem[],
+          hcid: responseData.hcid,
         });
       } catch (err) {
         console.error('Error fetching medical summary:', err);
@@ -120,7 +94,7 @@ const MedicalSummaryPage: React.FC = () => {
     };
 
     fetchMedicalSummary();
-  }, [token, validateToken]);
+  }, [token]);
 
   const getTriageLevelBadge = (level: string) => {
     const variants: Record<string, { color: string; label: string }> = {
