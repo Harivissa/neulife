@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import QRCode from 'react-qr-code';
 import { useHealthStorage, VitalReading } from '@/hooks/useHealthStorage';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +25,7 @@ import {
   XCircle,
   Shield,
   Smartphone,
+  AlertCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -74,7 +77,7 @@ const formatVitalValue = (vital: VitalReading) => {
 const HealthCardPage = () => {
   const { healthData, removeVital, removeSymptom, clearAll } = useHealthStorage();
   const { user } = useAuth();
-  const { qrCodeUrl, qrToken, isLoading, generateQRCode, disableQRToken, regenerateQRToken } = useMedicalQR();
+  const { qrValue, qrToken, isLoading, error: qrError, generateQRCode, disableQRToken, regenerateQRToken } = useMedicalQR();
   const [hcid, setHcid] = useState<string | null>(null);
 
   // Fetch or create user's health card ID
@@ -82,26 +85,38 @@ const HealthCardPage = () => {
     const fetchHealthCard = async () => {
       if (!user) return;
 
-      const { data: existingCard, error } = await supabase
-        .from('health_cards')
-        .select('hcid')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (existingCard) {
-        setHcid(existingCard.hcid);
-      } else if (!error) {
-        // Create new health card
-        const newHcid = `HCID-${user.id.substring(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
-        const { data: newCard } = await supabase
+      try {
+        const { data: existingCard, error } = await supabase
           .from('health_cards')
-          .insert({ user_id: user.id, hcid: newHcid })
           .select('hcid')
-          .single();
-        
-        if (newCard) {
-          setHcid(newCard.hcid);
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (existingCard) {
+          setHcid(existingCard.hcid);
+        } else if (!error) {
+          // Generate HC-IN-{short_id}-{random} format
+          const shortId = user.id.substring(0, 6).toUpperCase();
+          const randomPart = Array.from(crypto.getRandomValues(new Uint8Array(3)))
+            .map(b => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[b % 26])
+            .join('');
+          const newHcid = `HC-IN-${shortId}-${randomPart}`;
+          
+          const { data: newCard, error: insertError } = await supabase
+            .from('health_cards')
+            .insert({ user_id: user.id, hcid: newHcid })
+            .select('hcid')
+            .single();
+          
+          if (newCard) {
+            setHcid(newCard.hcid);
+          } else if (insertError) {
+            console.error('Error creating health card:', insertError);
+            toast.error('Unable to generate Health Card. Please try again.');
+          }
         }
+      } catch (err) {
+        console.error('Error in health card fetch:', err);
       }
     };
 
@@ -110,18 +125,18 @@ const HealthCardPage = () => {
 
   // Generate QR code when hcid is available
   useEffect(() => {
-    if (hcid && !qrCodeUrl) {
+    if (hcid && !qrValue) {
       generateQRCode(hcid, window.location.origin);
     }
-  }, [hcid, qrCodeUrl, generateQRCode]);
+  }, [hcid, qrValue, generateQRCode]);
 
   const handleRegenerateQR = async () => {
     if (!hcid) return;
     const result = await regenerateQRToken(hcid, window.location.origin);
     if (result) {
-      toast.success('QR code regenerated successfully');
+      toast.success('New QR Health Card Generated');
     } else {
-      toast.error('Failed to regenerate QR code');
+      toast.error(qrError || 'Unable to generate QR. Please try again.');
     }
   };
 
@@ -131,7 +146,7 @@ const HealthCardPage = () => {
     
     const result = await disableQRToken();
     if (result) {
-      toast.success('Medical QR disabled');
+      toast.success('QR access disabled for security');
     } else {
       toast.error('Failed to disable QR');
     }
@@ -167,86 +182,124 @@ const HealthCardPage = () => {
       </div>
 
       {/* Medical QR Section */}
-      <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          {/* QR Code Display */}
-          <div className="flex-shrink-0">
-            {isLoading ? (
-              <div className="w-40 h-40 bg-muted/50 rounded-xl flex items-center justify-center">
-                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : qrCodeUrl ? (
-              <div className="bg-white p-3 rounded-xl shadow-lg">
-                <img src={qrCodeUrl} alt="Medical QR Code" className="w-36 h-36" />
-              </div>
-            ) : (
-              <div className="w-40 h-40 bg-muted/50 rounded-xl flex items-center justify-center border-2 border-dashed border-muted-foreground/30">
-                <QrCode className="h-12 w-12 text-muted-foreground/50" />
-              </div>
-            )}
-          </div>
-
-          {/* QR Info & Actions */}
-          <div className="flex-1 space-y-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-lg font-semibold">NeuLife Medical QR</h3>
-                {qrToken && (
-                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
-                    <Shield className="h-3 w-3 mr-1" />
-                    Active
-                  </Badge>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Share this QR with doctors or hospitals for quick access to your medical summary.
-              </p>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20 relative overflow-hidden">
+          {/* Subtle glow effect */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-30"
+            style={{
+              background: 'radial-gradient(ellipse at 20% 50%, hsl(var(--primary) / 0.15) 0%, transparent 60%)',
+            }}
+          />
+          
+          <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
+            {/* QR Code Display */}
+            <div className="flex-shrink-0">
+              {isLoading ? (
+                <div className="w-44 h-44 bg-muted/50 rounded-xl flex items-center justify-center">
+                  <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : qrValue ? (
+                <motion.div
+                  className="bg-white p-4 rounded-xl shadow-lg"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                >
+                  <QRCode
+                    value={qrValue}
+                    size={152}
+                    level="H"
+                    bgColor="#FFFFFF"
+                    fgColor="#000000"
+                  />
+                </motion.div>
+              ) : qrError ? (
+                <div className="w-44 h-44 bg-destructive/5 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-destructive/30 p-4 text-center">
+                  <AlertCircle className="h-10 w-10 text-destructive/50 mb-2" />
+                  <p className="text-xs text-destructive/70">Unable to generate QR. Please try again.</p>
+                </div>
+              ) : (
+                <div className="w-44 h-44 bg-muted/50 rounded-xl flex items-center justify-center border-2 border-dashed border-muted-foreground/30">
+                  <QrCode className="h-12 w-12 text-muted-foreground/50" />
+                </div>
+              )}
             </div>
 
-            {hcid && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>Health Card ID:</span>
-                <code className="bg-muted px-2 py-0.5 rounded font-mono">{hcid}</code>
-              </div>
-            )}
-
-            <div className="flex items-start gap-3">
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Smartphone className="h-4 w-4" />
-                  <span>Scan to view read-only medical summary</span>
+            {/* QR Info & Actions */}
+            <div className="flex-1 space-y-4">
+              <div>
+                <p className="text-xs font-medium text-primary/80 uppercase tracking-wider mb-1">
+                  Your Digital Health Identity
+                </p>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg font-semibold">NeuLife Medical QR</h3>
+                  {qrToken && (
+                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Active
+                    </Badge>
+                  )}
+                  {!qrToken && !isLoading && !qrError && (
+                    <Badge variant="outline" className="bg-muted text-muted-foreground border-muted-foreground/30">
+                      Inactive
+                    </Badge>
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground/70">
-                  <em>This is patient-reported history to assist clinical decisions.</em>
+                <p className="text-sm text-muted-foreground">
+                  Share this QR with doctors or hospitals for quick access to your medical summary.
                 </p>
               </div>
-            </div>
 
-            <div className="flex gap-2 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRegenerateQR}
-                disabled={isLoading || !hcid}
-                className="gap-1"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Regenerate
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDisableQR}
-                disabled={isLoading || !qrToken}
-                className="gap-1 text-destructive hover:text-destructive"
-              >
-                <XCircle className="h-4 w-4" />
-                Disable
-              </Button>
+              {hcid && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-medium">Health Card ID:</span>
+                  <code className="bg-muted px-2 py-0.5 rounded font-mono text-foreground">{hcid}</code>
+                </div>
+              )}
+
+              <div className="flex items-start gap-3">
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Smartphone className="h-4 w-4" />
+                    <span>Scan to view read-only medical summary</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground/70">
+                    <em>This is patient-reported history to assist clinical decisions.</em>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRegenerateQR}
+                  disabled={isLoading || !hcid}
+                  className="gap-1"
+                >
+                  <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                  Regenerate
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDisableQR}
+                  disabled={isLoading || !qrToken}
+                  className="gap-1 text-destructive hover:text-destructive"
+                >
+                  <XCircle className="h-4 w-4" />
+                  Disable
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </motion.div>
 
       <Tabs defaultValue="trends" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-4">

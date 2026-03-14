@@ -1,7 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import QRCode from 'qrcode';
 
 interface QRToken {
   id: string;
@@ -10,25 +9,22 @@ interface QRToken {
   created_at: string;
 }
 
+const generateSecureToken = (length = 32): string => {
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from(array, (byte) => chars[byte % chars.length]).join('');
+};
+
 export const useMedicalQR = () => {
   const { user } = useAuth();
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [qrToken, setQrToken] = useState<QRToken | null>(null);
+  const [qrValue, setQrValue] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const generateToken = (): string => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let token = '';
-    for (let i = 0; i < 32; i++) {
-      token += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return token;
-  };
+  const [error, setError] = useState<string | null>(null);
 
   const fetchOrCreateQRToken = useCallback(async (hcid: string) => {
     if (!user) return null;
-
-    setIsLoading(true);
 
     try {
       // Check for existing active token
@@ -42,6 +38,7 @@ export const useMedicalQR = () => {
 
       if (fetchError) {
         console.error('Error fetching QR token:', fetchError);
+        setError('Failed to check existing QR token');
         return null;
       }
 
@@ -50,8 +47,8 @@ export const useMedicalQR = () => {
         return existingToken.token;
       }
 
-      // Create new token
-      const newToken = generateToken();
+      // Create new token using cryptographically secure generation
+      const newToken = generateSecureToken();
       const { data: createdToken, error: createError } = await supabase
         .from('medical_qr_tokens')
         .insert({
@@ -64,37 +61,38 @@ export const useMedicalQR = () => {
 
       if (createError) {
         console.error('Error creating QR token:', createError);
+        setError('Failed to create QR token');
         return null;
       }
 
       setQrToken(createdToken as QRToken);
       return newToken;
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      console.error('Unexpected error in fetchOrCreateQRToken:', err);
+      setError('Unable to generate QR. Please try again.');
+      return null;
     }
   }, [user]);
 
   const generateQRCode = useCallback(async (hcid: string, baseUrl: string) => {
-    const token = await fetchOrCreateQRToken(hcid);
-    if (!token) return null;
+    setIsLoading(true);
+    setError(null);
 
-    const qrUrl = `${baseUrl}/medical-summary/${token}`;
-    
     try {
-      const dataUrl = await QRCode.toDataURL(qrUrl, {
-        width: 256,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF',
-        },
-        errorCorrectionLevel: 'H',
-      });
-      
-      setQrCodeUrl(dataUrl);
-      return dataUrl;
-    } catch (error) {
-      console.error('Error generating QR code:', error);
+      const token = await fetchOrCreateQRToken(hcid);
+      if (!token) {
+        setIsLoading(false);
+        return null;
+      }
+
+      const url = `${baseUrl}/medical-summary/${token}`;
+      setQrValue(url);
+      setIsLoading(false);
+      return url;
+    } catch (err) {
+      console.error('Error generating QR code:', err);
+      setError('Unable to generate QR. Please try again.');
+      setIsLoading(false);
       return null;
     }
   }, [fetchOrCreateQRToken]);
@@ -102,58 +100,64 @@ export const useMedicalQR = () => {
   const disableQRToken = useCallback(async () => {
     if (!user || !qrToken) return false;
 
-    const { error } = await supabase
-      .from('medical_qr_tokens')
-      .update({ is_active: false })
-      .eq('id', qrToken.id)
-      .eq('user_id', user.id);
+    setIsLoading(true);
+    try {
+      const { error: updateError } = await supabase
+        .from('medical_qr_tokens')
+        .update({ is_active: false })
+        .eq('id', qrToken.id)
+        .eq('user_id', user.id);
 
-    if (error) {
-      console.error('Error disabling QR token:', error);
+      if (updateError) {
+        console.error('Error disabling QR token:', updateError);
+        setError('Failed to disable QR');
+        setIsLoading(false);
+        return false;
+      }
+
+      setQrToken(null);
+      setQrValue(null);
+      setError(null);
+      setIsLoading(false);
+      return true;
+    } catch (err) {
+      console.error('Unexpected error disabling QR:', err);
+      setIsLoading(false);
       return false;
     }
-
-    setQrToken(null);
-    setQrCodeUrl(null);
-    return true;
   }, [user, qrToken]);
 
   const regenerateQRToken = useCallback(async (hcid: string, baseUrl: string) => {
-    // Disable existing token first
-    await disableQRToken();
-    // Generate new one
-    return generateQRCode(hcid, baseUrl);
-  }, [disableQRToken, generateQRCode]);
+    setIsLoading(true);
+    setError(null);
 
-  // Validate a token (for the summary page)
-  const validateToken = useCallback(async (token: string) => {
-    const { data, error } = await supabase
-      .from('medical_qr_tokens')
-      .select('*, hcid')
-      .eq('token', token)
-      .eq('is_active', true)
-      .maybeSingle();
+    // Disable existing token if present
+    if (qrToken) {
+      const { error: updateError } = await supabase
+        .from('medical_qr_tokens')
+        .update({ is_active: false })
+        .eq('id', qrToken.id)
+        .eq('user_id', user?.id);
 
-    if (error || !data) {
-      return null;
+      if (updateError) {
+        console.error('Error disabling old token:', updateError);
+      }
+      setQrToken(null);
+      setQrValue(null);
     }
 
-    // Update last accessed timestamp
-    await supabase
-      .from('medical_qr_tokens')
-      .update({ last_accessed_at: new Date().toISOString() })
-      .eq('id', data.id);
-
-    return data;
-  }, []);
+    // Generate new one
+    const result = await generateQRCode(hcid, baseUrl);
+    return result;
+  }, [qrToken, user, generateQRCode]);
 
   return {
-    qrCodeUrl,
+    qrValue,
     qrToken,
     isLoading,
+    error,
     generateQRCode,
     disableQRToken,
     regenerateQRToken,
-    validateToken,
   };
 };
