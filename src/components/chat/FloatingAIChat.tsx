@@ -4,6 +4,12 @@ import { MessageCircle, X, Send, Mic, MicOff, Volume2, VolumeX, Loader2 } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { AIOrb } from "./AIOrb";
 import { SafeVoiceInput } from "./SafeVoiceInput";
 import { useTranslation } from "react-i18next";
@@ -19,6 +25,7 @@ interface Message {
 export const FloatingAIChat = () => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -80,6 +87,7 @@ export const FloatingAIChat = () => {
   const handleVoiceResult = (text: string) => {
     setInput(text);
     setShowVoice(false);
+    setIsVoiceActive(false);
     setOrbState("idle");
   };
 
@@ -104,20 +112,127 @@ export const FloatingAIChat = () => {
     }
   };
 
+  const handleVoiceClick = () => {
+    setIsVoiceActive(true);
+    setShowVoice(true);
+    setIsOpen(true);
+  };
+
+  const handleChatClick = () => {
+    setIsVoiceActive(false);
+    setShowVoice(false);
+    setIsOpen(true);
+  };
+
+  const buttonVariants = {
+    initial: { opacity: 0, y: 20, scale: 0.8 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: 20, scale: 0.8 },
+  };
+
+  const floatingAnimation = {
+    y: [0, -6, 0],
+    transition: {
+      duration: 3,
+      repeat: Infinity,
+      ease: "easeInOut",
+    },
+  };
+
   return (
-    <>
-      {/* Floating Button */}
-      <motion.button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-primary via-purple-500 to-cyan-500 shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center group"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: isOpen ? 0 : 1, y: isOpen ? 20 : 0, pointerEvents: isOpen ? "none" : "auto" }}
-      >
-        <MessageCircle className="h-6 w-6 text-white" />
-        <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-green-400 animate-pulse" />
-      </motion.button>
+    <TooltipProvider delayDuration={100}>
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.div
+            className="fixed bottom-6 right-6 z-50 flex flex-col gap-3"
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            {/* Chat Button - Top */}
+            <motion.div variants={buttonVariants} transition={{ duration: 0.3, delay: 0.1 }}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    onClick={handleChatClick}
+                    className="relative h-14 w-14 rounded-full flex items-center justify-center group"
+                    style={{
+                      background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(280, 70%, 50%) 50%, hsl(190, 90%, 50%) 100%)",
+                      boxShadow: `
+                        0 4px 20px rgba(139, 92, 246, 0.4),
+                        0 8px 40px rgba(139, 92, 246, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2)
+                      `,
+                    }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    animate={floatingAnimation}
+                    aria-label={t("chat.tooltip", "Chat Assistant")}
+                  >
+                    <MessageCircle className="h-6 w-6 text-white" strokeWidth={2} />
+                    {/* Status indicator */}
+                    <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-400 border-2 border-background animate-pulse" />
+                    {/* Glow effect on hover */}
+                    <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{
+                        background: "radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)",
+                        transform: "scale(1.5)",
+                      }}
+                    />
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="font-medium">
+                  {t("chat.tooltip", "Chat Assistant")}
+                </TooltipContent>
+              </Tooltip>
+            </motion.div>
+
+            {/* Voice Button - Bottom */}
+            <motion.div variants={buttonVariants} transition={{ duration: 0.3, delay: 0.2 }}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    onClick={handleVoiceClick}
+                    className="relative h-14 w-14 rounded-full flex items-center justify-center group"
+                    style={{
+                      background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(280, 70%, 50%) 50%, hsl(190, 90%, 50%) 100%)",
+                      boxShadow: `
+                        0 4px 20px rgba(139, 92, 246, 0.4),
+                        0 8px 40px rgba(139, 92, 246, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2)
+                      `,
+                    }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    animate={{
+                      y: [0, -6, 0],
+                      transition: {
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 0.5,
+                      },
+                    }}
+                    aria-label={t("voice.tooltip", "Voice Assistant")}
+                  >
+                    <Mic className="h-6 w-6 text-white" strokeWidth={2} />
+                    {/* Glow effect on hover */}
+                    <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{
+                        background: "radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)",
+                        transform: "scale(1.5)",
+                      }}
+                    />
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="font-medium">
+                  {t("voice.tooltip", "Voice Assistant")}
+                </TooltipContent>
+              </Tooltip>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Chat Panel */}
       <AnimatePresence>
@@ -134,7 +249,7 @@ export const FloatingAIChat = () => {
 
             {/* Chat Window */}
             <motion.div
-              className="fixed bottom-4 right-4 z-50 w-[calc(100%-2rem)] max-w-md h-[70vh] max-h-[600px] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+              className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100%-2rem)] sm:w-[400px] h-[70vh] max-h-[600px] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col"
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -258,6 +373,6 @@ export const FloatingAIChat = () => {
           </>
         )}
       </AnimatePresence>
-    </>
+    </TooltipProvider>
   );
 };
