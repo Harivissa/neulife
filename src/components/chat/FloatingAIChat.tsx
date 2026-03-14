@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Mic, MicOff, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Mic, MicOff, Volume2, VolumeX, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,7 +25,7 @@ interface Message {
 export const FloatingAIChat = () => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -87,12 +87,7 @@ export const FloatingAIChat = () => {
   const handleVoiceResult = (text: string) => {
     setInput(text);
     setShowVoice(false);
-    setIsVoiceActive(false);
     setOrbState("idle");
-  };
-
-  const handleListeningStateChange = (listening: boolean) => {
-    setOrbState(listening ? "listening" : "idle");
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -112,125 +107,129 @@ export const FloatingAIChat = () => {
     }
   };
 
-  const handleVoiceClick = () => {
-    setIsVoiceActive(true);
-    setShowVoice(true);
-    setIsOpen(true);
-  };
-
   const handleChatClick = () => {
-    setIsVoiceActive(false);
+    setIsExpanded(false);
     setShowVoice(false);
     setIsOpen(true);
   };
 
-  const buttonVariants = {
-    initial: { opacity: 0, y: 20, scale: 0.8 },
-    animate: { opacity: 1, y: 0, scale: 1 },
-    exit: { opacity: 0, y: 20, scale: 0.8 },
+  const handleVoiceClick = () => {
+    setIsExpanded(false);
+    setShowVoice(true);
+    setIsOpen(true);
   };
 
-  const floatingAnimation = {
-    y: [0, -6, 0],
-    transition: {
-      duration: 3,
-      repeat: Infinity,
-      ease: "easeInOut" as const,
-    },
+  const toggleExpand = () => {
+    setIsExpanded((prev) => !prev);
+  };
+
+  const gradientStyle = {
+    background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(280, 70%, 50%) 50%, hsl(190, 90%, 50%) 100%)",
+    boxShadow: `
+      0 4px 20px hsl(var(--primary) / 0.3),
+      0 8px 40px hsl(var(--primary) / 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2)
+    `,
   };
 
   return (
     <TooltipProvider delayDuration={100}>
+      {/* Floating AI Hub */}
       <AnimatePresence>
         {!isOpen && (
-          <motion.div
-            className="fixed bottom-6 right-6 z-50 flex flex-col gap-3"
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
-            {/* Chat Button - Top */}
-            <motion.div variants={buttonVariants} transition={{ duration: 0.3, delay: 0.1 }}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    onClick={handleChatClick}
-                    className="relative h-14 w-14 rounded-full flex items-center justify-center group"
-                    style={{
-                      background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(280, 70%, 50%) 50%, hsl(190, 90%, 50%) 100%)",
-                      boxShadow: `
-                        0 4px 20px rgba(139, 92, 246, 0.4),
-                        0 8px 40px rgba(139, 92, 246, 0.2),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.2)
-                      `,
-                    }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    animate={floatingAnimation}
-                    aria-label={t("chat.tooltip", "Chat Assistant")}
+          <div className="fixed bottom-6 right-6 z-50">
+            {/* Expanded options */}
+            <AnimatePresence>
+              {isExpanded && (
+                <>
+                  {/* Chat button - positioned to the upper-left */}
+                  <motion.div
+                    className="absolute bottom-16 right-12"
+                    initial={{ opacity: 0, scale: 0.5, x: 10, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.5, x: 10, y: 10 }}
+                    transition={{ duration: 0.25, delay: 0.05 }}
                   >
-                    <MessageCircle className="h-6 w-6 text-white" strokeWidth={2} />
-                    {/* Status indicator */}
-                    <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-400 border-2 border-background animate-pulse" />
-                    {/* Glow effect on hover */}
-                    <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{
-                        background: "radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)",
-                        transform: "scale(1.5)",
-                      }}
-                    />
-                  </motion.button>
-                </TooltipTrigger>
-                <TooltipContent side="left" className="font-medium">
-                  {t("chat.tooltip", "Chat Assistant")}
-                </TooltipContent>
-              </Tooltip>
-            </motion.div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <motion.button
+                          onClick={handleChatClick}
+                          className="relative h-12 w-12 rounded-full flex items-center justify-center"
+                          style={gradientStyle}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          aria-label={t("chat.tooltip", "Chat Assistant")}
+                        >
+                          <MessageCircle className="h-5 w-5 text-white" strokeWidth={2} />
+                        </motion.button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="font-medium">
+                        {t("chat.tooltip", "Chat Assistant")}
+                      </TooltipContent>
+                    </Tooltip>
+                  </motion.div>
 
-            {/* Voice Button - Bottom */}
-            <motion.div variants={buttonVariants} transition={{ duration: 0.3, delay: 0.2 }}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    onClick={handleVoiceClick}
-                    className="relative h-14 w-14 rounded-full flex items-center justify-center group"
-                    style={{
-                      background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(280, 70%, 50%) 50%, hsl(190, 90%, 50%) 100%)",
-                      boxShadow: `
-                        0 4px 20px rgba(139, 92, 246, 0.4),
-                        0 8px 40px rgba(139, 92, 246, 0.2),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.2)
-                      `,
-                    }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    animate={{
-                      y: [0, -6, 0],
-                      transition: {
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: 0.5,
-                      },
-                    }}
-                    aria-label={t("voice.tooltip", "Voice Assistant")}
+                  {/* Voice button - positioned to the upper-right */}
+                  <motion.div
+                    className="absolute bottom-16 -right-1"
+                    initial={{ opacity: 0, scale: 0.5, x: -10, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.5, x: -10, y: 10 }}
+                    transition={{ duration: 0.25, delay: 0.1 }}
                   >
-                    <Mic className="h-6 w-6 text-white" strokeWidth={2} />
-                    {/* Glow effect on hover */}
-                    <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{
-                        background: "radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)",
-                        transform: "scale(1.5)",
-                      }}
-                    />
-                  </motion.button>
-                </TooltipTrigger>
-                <TooltipContent side="left" className="font-medium">
-                  {t("voice.tooltip", "Voice Assistant")}
-                </TooltipContent>
-              </Tooltip>
-            </motion.div>
-          </motion.div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <motion.button
+                          onClick={handleVoiceClick}
+                          className="relative h-12 w-12 rounded-full flex items-center justify-center"
+                          style={gradientStyle}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          aria-label={t("voice.tooltip", "Voice Assistant")}
+                        >
+                          <Mic className="h-5 w-5 text-white" strokeWidth={2} />
+                        </motion.button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="font-medium">
+                        {t("voice.tooltip", "Voice Assistant")}
+                      </TooltipContent>
+                    </Tooltip>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+
+            {/* Main AI button */}
+            <motion.button
+              onClick={toggleExpand}
+              className="relative h-14 w-14 rounded-full flex items-center justify-center group"
+              style={gradientStyle}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              animate={{
+                y: [0, -4, 0],
+                rotate: isExpanded ? 45 : 0,
+              }}
+              transition={{
+                y: { duration: 3, repeat: Infinity, ease: "easeInOut" as const },
+                rotate: { duration: 0.3 },
+              }}
+              initial={{ opacity: 0, y: 20 }}
+              aria-label="AI Assistant"
+            >
+              <Sparkles className="h-6 w-6 text-white" strokeWidth={2} />
+              {/* Status indicator */}
+              <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-400 border-2 border-background animate-pulse" />
+              {/* Glow on hover */}
+              <span
+                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{
+                  background: "radial-gradient(circle, hsl(var(--primary) / 0.3) 0%, transparent 70%)",
+                  transform: "scale(1.5)",
+                }}
+              />
+            </motion.button>
+          </div>
         )}
       </AnimatePresence>
 
@@ -334,9 +333,7 @@ export const FloatingAIChat = () => {
               {/* Voice Input Panel */}
               {showVoice && (
                 <div className="p-4 border-t border-border bg-muted/30">
-                  <SafeVoiceInput
-                    onTranscription={handleVoiceResult}
-                  />
+                  <SafeVoiceInput onTranscription={handleVoiceResult} />
                 </div>
               )}
 
