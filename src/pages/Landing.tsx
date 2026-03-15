@@ -92,6 +92,7 @@ const Landing = () => {
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactMessage, setContactMessage] = useState("");
+  const [contactSubmitting, setContactSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchUserAndGenerateQR = async (session: any) => {
