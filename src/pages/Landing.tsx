@@ -817,13 +817,12 @@ const Landing = () => {
                     </div>
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-1">Michelle Manda</h3>
+<h3 className="text-xl font-bold text-foreground mb-1">Michelle Manda</h3>
                 <p className="text-sm text-secondary font-medium mb-4">
-                  Medical Aspirant & Healthcare Visionary
+                  Medical Research & Healthcare Innovation
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Driven by a passion for medicine and patient care, with a vision to combine
-                  human empathy and technology to improve healthcare accessibility.
+                  Passionate about medicine and patient-centered healthcare, with an interest in combining medical insight and technology to improve healthcare accessibility.
                 </p>
               </Card>
             </motion.div>
