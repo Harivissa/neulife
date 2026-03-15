@@ -20,6 +20,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import AuthModal from "@/components/AuthModal";
 import { FloatingAIChat } from "@/components/chat";
 
