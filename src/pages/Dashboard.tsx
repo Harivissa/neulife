@@ -102,19 +102,7 @@ const Dashboard = () => {
     
     if (data) {
       setHealthCard(data);
-      generateQRCode(data.hcid);
-    }
-  };
-
-  const generateQRCode = async (hcid: string) => {
-    try {
-      const url = await QRCode.toDataURL(hcid, {
-        width: 300,
-        margin: 2,
-      });
-      setQrCodeUrl(url);
-    } catch (error) {
-      console.error("Error generating QR code:", error);
+      setQrValue(data.hcid);
     }
   };
 
