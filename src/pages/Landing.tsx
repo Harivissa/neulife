@@ -786,13 +786,12 @@ const Landing = () => {
                     </div>
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-1">Hari Vissa</h3>
+<h3 className="text-xl font-bold text-foreground mb-1">Hari Vissa</h3>
                 <p className="text-sm text-primary font-medium mb-4">
-                  Future Tech Engineer & AI Healthcare Developer
+                  AI Healthcare Engineer
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Focused on building AI-powered healthcare systems that simplify diagnosis,
-                  improve early intervention, and make medical guidance accessible to everyone.
+                  Focused on building AI-powered healthcare systems that improve early health understanding, preventive care, and human-centered digital health experiences.
                 </p>
               </Card>
             </motion.div>
