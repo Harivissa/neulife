@@ -780,21 +780,8 @@ const Landing = () => {
               viewport={{ once: true }}
               variants={fadeInRight}
             >
-              <Card className="p-8 bg-card border-border/50 hover:shadow-xl transition-shadow text-center h-full">
-                <div className="mb-6 flex justify-center">
-                  {/* Square container with aspect-ratio 1:1, minimum 160px */}
-                  <div className="relative w-40 h-40 md:w-44 md:h-44">
-                    <div className="absolute inset-0 rounded-full overflow-hidden border-4 border-secondary/20 shadow-xl bg-muted">
-                      <img 
-                        src={founderMichelle} 
-                        alt="Michelle Manda" 
-                        className="w-full h-full object-cover"
-                        style={{ objectPosition: '50% 25%' }}
-                      />
-                    </div>
-                  </div>
-                </div>
-<h3 className="text-xl font-bold text-foreground mb-1">Michelle Manda</h3>
+              <Card className="p-8 bg-card border-border/50 hover:shadow-xl transition-shadow text-center h-full flex flex-col justify-center">
+                <h3 className="text-xl font-bold text-foreground mb-1">Michelle Manda</h3>
                 <p className="text-sm text-secondary font-medium mb-4">
                   Medical Research & Healthcare Innovation
                 </p>
