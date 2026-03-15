@@ -226,10 +226,10 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                {qrCodeUrl && (
+                {qrValue && (
                   <div className="flex flex-col items-center">
-                    <div className="bg-card-elevated p-4 rounded-lg border-2 border-primary/20">
-                      <img src={qrCodeUrl} alt="Health Card QR Code" className="w-48 h-48" />
+                    <div className="bg-white p-4 rounded-lg border-2 border-primary/20">
+                      <QRCode value={qrValue} size={192} />
                     </div>
                     <Button variant="outline" size="sm" className="mt-3">
                       <QrCode className="h-4 w-4 mr-2" />
