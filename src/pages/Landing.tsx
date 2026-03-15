@@ -79,7 +79,7 @@ const Landing = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [userProfile, setUserProfile] = useState<{ name: string; email: string } | null>(null);
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [qrValue, setQrValue] = useState<string>("");
 
   // Demo scanner states
   const [temperature, setTemperature] = useState([98.6]);
