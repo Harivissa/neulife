@@ -167,7 +167,7 @@ const Landing = () => {
 
           <div className="flex items-center gap-3">
             {/* QR Code for logged-in users */}
-            {isAuthenticated && qrCodeUrl && (
+            {isAuthenticated && qrValue && (
               <div className="relative group">
                 <button className="p-2 rounded-full hover:bg-muted transition-colors">
                   <QrCode className="h-5 w-5 text-primary" />
@@ -175,7 +175,7 @@ const Landing = () => {
                 <div className="absolute right-0 top-full mt-2 p-4 bg-card border border-border rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-50 min-w-[220px]">
                   <div className="text-center space-y-3">
                     <div className="p-2 bg-white rounded-lg inline-block shadow-inner">
-                      <img src={qrCodeUrl} alt="Digital Health ID" className="w-32 h-32" />
+                      <QRCode value={qrValue} size={128} />
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-semibold text-foreground flex items-center justify-center gap-1">
