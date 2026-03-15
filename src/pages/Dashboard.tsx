@@ -13,7 +13,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useTranslation } from "react-i18next";
-import QRCode from "qrcode";
+import QRCode from "react-qr-code";
 import { Footer } from "@/components/layout/Footer";
 
 const Dashboard = () => {

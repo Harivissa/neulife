@@ -13,7 +13,7 @@ import {
   Building2, Phone, ArrowRight, ChevronRight, Mail, MapPin, 
   Calendar, QrCode, UserCheck
 } from "lucide-react";
-import QRCode from "qrcode";
+import QRCode from "react-qr-code";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
