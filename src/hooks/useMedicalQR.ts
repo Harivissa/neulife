@@ -28,13 +28,16 @@ export const useMedicalQR = () => {
 
     try {
       // Check for existing active token
-      const { data: existingToken, error: fetchError } = await supabase
+      const { data: existingTokens, error: fetchError } = await supabase
         .from('medical_qr_tokens')
         .select('*')
         .eq('user_id', user.id)
         .eq('hcid', hcid)
         .eq('is_active', true)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      const existingToken = existingTokens?.[0] ?? null;
 
       if (fetchError) {
         console.error('Error fetching QR token:', fetchError);
