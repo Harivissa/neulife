@@ -22,7 +22,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [healthCard, setHealthCard] = useState<any>(null);
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [qrValue, setQrValue] = useState<string>("");
   const [showCardRequest, setShowCardRequest] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
