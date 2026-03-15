@@ -13,7 +13,7 @@ import {
   Building2, Phone, ArrowRight, ChevronRight, Mail, MapPin, 
   Calendar, QrCode, UserCheck
 } from "lucide-react";
-import QRCode from "qrcode";
+import QRCode from "react-qr-code";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -79,7 +79,7 @@ const Landing = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [userProfile, setUserProfile] = useState<{ name: string; email: string } | null>(null);
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [qrValue, setQrValue] = useState<string>("");
 
   // Demo scanner states
   const [temperature, setTemperature] = useState([98.6]);
@@ -109,7 +109,7 @@ const Landing = () => {
         const userEmail = profile?.email || session.user.email || '';
         setUserProfile({ name: userName, email: userEmail });
 
-        // Generate QR code
+        // Generate QR value
         const qrData = JSON.stringify({
           platform: "NeuLife",
           verified: true,
@@ -118,20 +118,10 @@ const Landing = () => {
           role: "User",
           message: "Verified NeuLife Digital Profile"
         });
-        
-        try {
-          const qrUrl = await QRCode.toDataURL(qrData, {
-            width: 200,
-            margin: 2,
-            color: { dark: '#000000', light: '#ffffff' }
-          });
-          setQrCodeUrl(qrUrl);
-        } catch (err) {
-          console.error('QR generation error:', err);
-        }
+        setQrValue(qrData);
       } else {
         setUserProfile(null);
-        setQrCodeUrl("");
+        setQrValue("");
       }
     };
 
@@ -177,7 +167,7 @@ const Landing = () => {
 
           <div className="flex items-center gap-3">
             {/* QR Code for logged-in users */}
-            {isAuthenticated && qrCodeUrl && (
+            {isAuthenticated && qrValue && (
               <div className="relative group">
                 <button className="p-2 rounded-full hover:bg-muted transition-colors">
                   <QrCode className="h-5 w-5 text-primary" />
@@ -185,7 +175,7 @@ const Landing = () => {
                 <div className="absolute right-0 top-full mt-2 p-4 bg-card border border-border rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-50 min-w-[220px]">
                   <div className="text-center space-y-3">
                     <div className="p-2 bg-white rounded-lg inline-block shadow-inner">
-                      <img src={qrCodeUrl} alt="Digital Health ID" className="w-32 h-32" />
+                      <QRCode value={qrValue} size={128} />
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-semibold text-foreground flex items-center justify-center gap-1">

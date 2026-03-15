@@ -14,7 +14,7 @@ export const VirtualRespiratoryRate = ({ onReading }: VirtualRespiratoryRateProp
   const [timeLeft, setTimeLeft] = useState(60);
   const [finalRate, setFinalRate] = useState<number | null>(null);
   const [saved, setSaved] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (counting && timeLeft > 0) {

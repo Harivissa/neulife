@@ -13,7 +13,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useTranslation } from "react-i18next";
-import QRCode from "qrcode";
+import QRCode from "react-qr-code";
 import { Footer } from "@/components/layout/Footer";
 
 const Dashboard = () => {
@@ -22,7 +22,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [healthCard, setHealthCard] = useState<any>(null);
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [qrValue, setQrValue] = useState<string>("");
   const [showCardRequest, setShowCardRequest] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -102,19 +102,7 @@ const Dashboard = () => {
     
     if (data) {
       setHealthCard(data);
-      generateQRCode(data.hcid);
-    }
-  };
-
-  const generateQRCode = async (hcid: string) => {
-    try {
-      const url = await QRCode.toDataURL(hcid, {
-        width: 300,
-        margin: 2,
-      });
-      setQrCodeUrl(url);
-    } catch (error) {
-      console.error("Error generating QR code:", error);
+      setQrValue(data.hcid);
     }
   };
 
@@ -238,10 +226,10 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                {qrCodeUrl && (
+                {qrValue && (
                   <div className="flex flex-col items-center">
-                    <div className="bg-card-elevated p-4 rounded-lg border-2 border-primary/20">
-                      <img src={qrCodeUrl} alt="Health Card QR Code" className="w-48 h-48" />
+                    <div className="bg-white p-4 rounded-lg border-2 border-primary/20">
+                      <QRCode value={qrValue} size={192} />
                     </div>
                     <Button variant="outline" size="sm" className="mt-3">
                       <QrCode className="h-4 w-4 mr-2" />
