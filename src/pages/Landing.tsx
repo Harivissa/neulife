@@ -20,6 +20,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import AuthModal from "@/components/AuthModal";
 import { FloatingAIChat } from "@/components/chat";
 
@@ -92,6 +93,7 @@ const Landing = () => {
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactMessage, setContactMessage] = useState("");
+  const [contactSubmitting, setContactSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchUserAndGenerateQR = async (session: any) => {
@@ -974,16 +976,47 @@ const Landing = () => {
                     </div>
                     <Button 
                       className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg"
-                      onClick={() => {
-                        // Demo only - show success message
-                        alert('Thank you for your message! This is a demo feature.');
+                      disabled={contactSubmitting}
+                      onClick={async () => {
+                        const trimmedName = contactName.trim();
+                        const trimmedEmail = contactEmail.trim();
+                        const trimmedMessage = contactMessage.trim();
+
+                        if (!trimmedName || !trimmedEmail || !trimmedMessage) {
+                          toast.error('Please fill in all fields.');
+                          return;
+                        }
+                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+                          toast.error('Please enter a valid email address.');
+                          return;
+                        }
+                        if (trimmedName.length > 100 || trimmedEmail.length > 255 || trimmedMessage.length > 2000) {
+                          toast.error('One or more fields exceed the maximum length.');
+                          return;
+                        }
+
+                        setContactSubmitting(true);
+                        const { error } = await supabase.from('contact_messages').insert({
+                          name: trimmedName,
+                          email: trimmedEmail,
+                          message: trimmedMessage,
+                        });
+                        setContactSubmitting(false);
+
+                        if (error) {
+                          console.error('Contact form error:', error);
+                          toast.error('Failed to send message. Please try again.');
+                          return;
+                        }
+
+                        toast.success('Thank you! Your message has been sent.');
                         setContactName('');
                         setContactEmail('');
                         setContactMessage('');
                       }}
                     >
                       <Mail className="h-4 w-4 mr-2" />
-                      Send Message
+                      {contactSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>
                   </div>
                 </Card>
