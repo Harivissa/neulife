@@ -109,7 +109,7 @@ const Landing = () => {
         const userEmail = profile?.email || session.user.email || '';
         setUserProfile({ name: userName, email: userEmail });
 
-        // Generate QR code
+        // Generate QR value
         const qrData = JSON.stringify({
           platform: "NeuLife",
           verified: true,
@@ -118,20 +118,10 @@ const Landing = () => {
           role: "User",
           message: "Verified NeuLife Digital Profile"
         });
-        
-        try {
-          const qrUrl = await QRCode.toDataURL(qrData, {
-            width: 200,
-            margin: 2,
-            color: { dark: '#000000', light: '#ffffff' }
-          });
-          setQrCodeUrl(qrUrl);
-        } catch (err) {
-          console.error('QR generation error:', err);
-        }
+        setQrValue(qrData);
       } else {
         setUserProfile(null);
-        setQrCodeUrl("");
+        setQrValue("");
       }
     };
 
