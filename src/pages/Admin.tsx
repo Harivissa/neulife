@@ -272,7 +272,7 @@ const Admin = () => {
           </div>
 
           {/* Pending Verifications Table */}
-          {!showAssessments ? (
+          {activeTab === 'pending' && (
             <Card className="p-6">
               <h3 className="text-xl font-bold mb-4">{t('pendingVerifications')}</h3>
               <div className="overflow-x-auto">
@@ -330,7 +330,9 @@ const Admin = () => {
               </Table>
             </div>
           </Card>
-          ) : (
+          )}
+
+          {activeTab === 'assessments' && (
             <Card className="p-6">
               <h2 className="text-2xl font-bold mb-6">All Assessments</h2>
               {allAssessments.length === 0 ? (
@@ -364,6 +366,38 @@ const Admin = () => {
                             </span>
                           </TableCell>
                           <TableCell>{assessment.confidence || "N/A"}%</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </Card>
+          )}
+
+          {activeTab === 'contacts' && (
+            <Card className="p-6">
+              <h2 className="text-2xl font-bold mb-6">Contact Messages</h2>
+              {contactMessages.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No contact messages yet</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Message</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {contactMessages.map((msg) => (
+                        <TableRow key={msg.id}>
+                          <TableCell className="whitespace-nowrap">{new Date(msg.created_at).toLocaleString()}</TableCell>
+                          <TableCell>{msg.name}</TableCell>
+                          <TableCell>{msg.email}</TableCell>
+                          <TableCell className="max-w-md truncate">{msg.message}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
