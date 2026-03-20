@@ -118,6 +118,15 @@ const Admin = () => {
     setAllAssessments(data || []);
   };
 
+  const fetchContactMessages = async () => {
+    const { data } = await supabase
+      .from("contact_messages")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setContactMessages(data || []);
+  };
+
   const handleApprove = async (cardId: string) => {
     try {
       const { error } = await supabase
