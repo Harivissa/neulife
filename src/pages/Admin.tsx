@@ -24,7 +24,8 @@ const Admin = () => {
   });
   const [pendingCards, setPendingCards] = useState<any[]>([]);
   const [allAssessments, setAllAssessments] = useState<any[]>([]);
-  const [showAssessments, setShowAssessments] = useState(false);
+  const [contactMessages, setContactMessages] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'pending' | 'assessments' | 'contacts'>('pending');
 
   useEffect(() => {
     checkAdmin();
