@@ -245,19 +245,29 @@ const Admin = () => {
           {/* Toggle Buttons */}
           <div className="flex gap-4">
             <Button
-              variant={!showAssessments ? "default" : "outline"}
-              onClick={() => setShowAssessments(false)}
+              variant={activeTab === 'pending' ? "default" : "outline"}
+              onClick={() => setActiveTab('pending')}
             >
               Pending Verifications
             </Button>
             <Button
-              variant={showAssessments ? "default" : "outline"}
+              variant={activeTab === 'assessments' ? "default" : "outline"}
               onClick={() => {
-                setShowAssessments(true);
+                setActiveTab('assessments');
                 fetchAllAssessments();
               }}
             >
               All Assessments
+            </Button>
+            <Button
+              variant={activeTab === 'contacts' ? "default" : "outline"}
+              onClick={() => {
+                setActiveTab('contacts');
+                fetchContactMessages();
+              }}
+            >
+              <Mail className="h-4 w-4 mr-1" />
+              Contact Messages
             </Button>
           </div>
 
