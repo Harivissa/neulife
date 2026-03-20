@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Heart, Shield, Users, FileText, CheckCircle, XCircle, Activity } from "lucide-react";
+import { Heart, Shield, Users, FileText, CheckCircle, XCircle, Activity, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -24,7 +24,8 @@ const Admin = () => {
   });
   const [pendingCards, setPendingCards] = useState<any[]>([]);
   const [allAssessments, setAllAssessments] = useState<any[]>([]);
-  const [showAssessments, setShowAssessments] = useState(false);
+  const [contactMessages, setContactMessages] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'pending' | 'assessments' | 'contacts'>('pending');
 
   useEffect(() => {
     checkAdmin();
@@ -115,6 +116,15 @@ const Admin = () => {
       .limit(50);
 
     setAllAssessments(data || []);
+  };
+
+  const fetchContactMessages = async () => {
+    const { data } = await supabase
+      .from("contact_messages")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setContactMessages(data || []);
   };
 
   const handleApprove = async (cardId: string) => {
@@ -235,24 +245,34 @@ const Admin = () => {
           {/* Toggle Buttons */}
           <div className="flex gap-4">
             <Button
-              variant={!showAssessments ? "default" : "outline"}
-              onClick={() => setShowAssessments(false)}
+              variant={activeTab === 'pending' ? "default" : "outline"}
+              onClick={() => setActiveTab('pending')}
             >
               Pending Verifications
             </Button>
             <Button
-              variant={showAssessments ? "default" : "outline"}
+              variant={activeTab === 'assessments' ? "default" : "outline"}
               onClick={() => {
-                setShowAssessments(true);
+                setActiveTab('assessments');
                 fetchAllAssessments();
               }}
             >
               All Assessments
             </Button>
+            <Button
+              variant={activeTab === 'contacts' ? "default" : "outline"}
+              onClick={() => {
+                setActiveTab('contacts');
+                fetchContactMessages();
+              }}
+            >
+              <Mail className="h-4 w-4 mr-1" />
+              Contact Messages
+            </Button>
           </div>
 
           {/* Pending Verifications Table */}
-          {!showAssessments ? (
+          {activeTab === 'pending' && (
             <Card className="p-6">
               <h3 className="text-xl font-bold mb-4">{t('pendingVerifications')}</h3>
               <div className="overflow-x-auto">
@@ -310,7 +330,9 @@ const Admin = () => {
               </Table>
             </div>
           </Card>
-          ) : (
+          )}
+
+          {activeTab === 'assessments' && (
             <Card className="p-6">
               <h2 className="text-2xl font-bold mb-6">All Assessments</h2>
               {allAssessments.length === 0 ? (
@@ -344,6 +366,38 @@ const Admin = () => {
                             </span>
                           </TableCell>
                           <TableCell>{assessment.confidence || "N/A"}%</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </Card>
+          )}
+
+          {activeTab === 'contacts' && (
+            <Card className="p-6">
+              <h2 className="text-2xl font-bold mb-6">Contact Messages</h2>
+              {contactMessages.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No contact messages yet</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Message</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {contactMessages.map((msg) => (
+                        <TableRow key={msg.id}>
+                          <TableCell className="whitespace-nowrap">{new Date(msg.created_at).toLocaleString()}</TableCell>
+                          <TableCell>{msg.name}</TableCell>
+                          <TableCell>{msg.email}</TableCell>
+                          <TableCell className="max-w-md truncate">{msg.message}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
